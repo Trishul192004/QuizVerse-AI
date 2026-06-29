@@ -1,22 +1,30 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { LogOut } from "lucide-react";
 
 import { sidebarItems } from "@/constants/sidebar";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
 
-  // Temporary role
-  // Later this will come from AuthContext
-  const role = "teacher";
+  const { user, logout } = useAuth();
+
+  const role = user?.role ?? "teacher";
 
   const menu = sidebarItems.find(
     (section) => section.role === role
   );
+
+  const handleLogout = () => {
+    logout();
+
+    router.replace("/login");
+  };
 
   return (
     <aside className="flex h-screen w-72 flex-col border-r bg-slate-950 text-white">
@@ -28,15 +36,11 @@ export default function Sidebar() {
       <div className="border-b border-slate-800 p-6">
 
         <h1 className="text-2xl font-bold">
-
           QuizVerse AI
-
         </h1>
 
         <p className="mt-1 text-sm text-slate-400">
-
           Smart Learning Platform
-
         </p>
 
       </div>
@@ -60,7 +64,9 @@ export default function Sidebar() {
               key={item.title}
               href={item.href}
               className={`
-                flex items-center gap-3
+                flex
+                items-center
+                gap-3
                 rounded-xl
                 px-4
                 py-3
@@ -78,9 +84,7 @@ export default function Sidebar() {
               <Icon size={20} />
 
               <span>
-
                 {item.title}
-
               </span>
 
             </Link>
@@ -100,20 +104,17 @@ export default function Sidebar() {
         <div className="mb-4">
 
           <p className="font-semibold">
-
-            Trishul
-
+            {user?.username ?? "Guest"}
           </p>
 
-          <p className="text-sm text-slate-400">
-
-            Teacher
-
+          <p className="text-sm capitalize text-slate-400">
+            {user?.role ?? "Teacher"}
           </p>
 
         </div>
 
         <button
+          onClick={handleLogout}
           className="
             flex
             w-full

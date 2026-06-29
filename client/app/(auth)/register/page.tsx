@@ -5,7 +5,7 @@ export default function RegisterPage() {
   return (
     <AuthLayout
       title="Create Account"
-      subtitle="Start your AI learning journey"
+      subtitle="Join QuizVerse AI today"
     >
       <RegisterForm />
     </AuthLayout>
