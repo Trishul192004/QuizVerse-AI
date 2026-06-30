@@ -1,14 +1,11 @@
 import WelcomeBanner from "@/components/dashboard/WelcomeBanner";
 import StatsGrid from "@/components/dashboard/StatsGrid";
 
-export default function TeacherPage() {
+export default function TeacherDashboard() {
   return (
     <div className="space-y-8">
-
-      <WelcomeBanner />
-
-      <StatsGrid />
-
+       <WelcomeBanner />
+        <StatsGrid />
     </div>
   );
 }

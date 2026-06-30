@@ -5,7 +5,7 @@ import { ReactNode } from "react";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 
-interface DashboardLayoutProps {
+interface DashboardLayoutProps {    
   children: ReactNode;
 }
 

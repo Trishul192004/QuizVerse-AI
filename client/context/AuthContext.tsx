@@ -5,9 +5,9 @@ import {
   useContext,
   useMemo,
   useState,
+  useEffect,
   ReactNode,
-} from "react";
-
+  } from "react";
 import {
   AuthContextType,
   User,
@@ -43,30 +43,27 @@ export function AuthProvider({
   ========================================
   */
 
-  const [token, setToken] = useState<string | null>(
-    () => {
-      if (typeof window === "undefined") {
-        return null;
-      }
+const [token, setToken] = useState<string | null>(null);
 
-      return localStorage.getItem("token");
-    }
-  );
+const [user, setUser] = useState<User | null>(null);
 
-  const [user, setUser] =
-    useState<User | null>(() => {
-      if (typeof window === "undefined") {
-        return null;
-      }
+const [loading, setLoading] = useState(true);
 
-      const savedUser =
-        localStorage.getItem("user");
+useEffect(() => {
+  const savedToken = localStorage.getItem("token");
 
-      return savedUser
-        ? JSON.parse(savedUser)
-        : null;
-    });
+  const savedUser = localStorage.getItem("user");
 
+  if (savedToken) {
+    setToken(savedToken);
+  }
+
+  if (savedUser) {
+    setUser(JSON.parse(savedUser));
+  }
+
+  setLoading(false);
+}, []);
   /*
   ========================================
   LOGIN
