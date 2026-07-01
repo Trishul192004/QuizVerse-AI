@@ -27,7 +27,7 @@ GET /
 app.get("/", (req, res) => {
   res.json({
     success: true,
-    message: "QuizVerse Backend Running"
+    message: "QuizVerse Backend Running",
   });
 });
 
@@ -41,6 +41,13 @@ app.use("/api/test", testRoute);
 
 app.use("/api/auth", authRoutes);
 
+/*
+=================================
+CLASSROOM ROUTES
+=================================
+*/
+
+app.use("/api/classrooms", classroomRoutes);
 app.use("/api/classroom", classroomRoutes);
 
 /*
@@ -52,7 +59,7 @@ app.use("/api/classroom", classroomRoutes);
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: "Route Not Found"
+    message: "Route Not Found",
   });
 });
 

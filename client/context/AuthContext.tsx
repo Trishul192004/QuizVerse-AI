@@ -43,9 +43,9 @@ export function AuthProvider({
   ========================================
   */
 
-const [token, setToken] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
-const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
 const [loading, setLoading] = useState(true);
 
@@ -55,7 +55,7 @@ useEffect(() => {
   const savedUser = localStorage.getItem("user");
 
   if (savedToken) {
-    setToken(savedToken);
+     setToken(savedToken);
   }
 
   if (savedUser) {
@@ -127,7 +127,7 @@ useEffect(() => {
 
       token,
 
-      loading: false,
+      loading,
 
       isAuthenticated: !!token,
 
@@ -135,7 +135,7 @@ useEffect(() => {
 
       logout,
     }),
-    [user, token]
+    [user, token, loading]
   );
 
   return (
