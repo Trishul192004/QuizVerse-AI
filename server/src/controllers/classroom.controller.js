@@ -135,3 +135,80 @@ exports.deleteClassroom = async (req, res) => {
 
   }
 };
+
+exports.joinClassroom = async (req, res) => {
+  try {
+
+    const { joinCode } = req.body;
+
+    if (!joinCode) {
+      return res.status(400).json({
+        success: false,
+        message: "Join code is required",
+      });
+    }
+
+    // Find classroom
+    const [classrooms] = await db.query(
+      `
+      SELECT id, name
+      FROM classrooms
+      WHERE join_code = ?
+      `,
+      [joinCode]
+    );
+
+    if (classrooms.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Invalid join code",
+      });
+    }
+
+    const classroom = classrooms[0];
+
+    // Check if already joined
+    const [existing] = await db.query(
+      `
+      SELECT id
+      FROM classroom_students
+      WHERE classroom_id = ?
+      AND student_id = ?
+      `,
+      [classroom.id, req.user.id]
+    );
+
+    if (existing.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message: "You have already joined this classroom",
+      });
+    }
+
+    // Join classroom
+    await db.query(
+      `
+      INSERT INTO classroom_students
+      (classroom_id, student_id)
+      VALUES (?, ?)
+      `,
+      [classroom.id, req.user.id]
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Joined classroom successfully",
+      classroom,
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+
+  }
+};

@@ -55,7 +55,7 @@ export const sidebarItems: SidebarSection[] = [
       },
       {
         title: "Join Classroom",
-        href: "/student/classroom",
+        href: "/student/join",
         icon: GraduationCap,
       },
       {

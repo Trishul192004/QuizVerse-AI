@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { useForm } from "react-hook-form";
-
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -27,8 +26,8 @@ export default function JoinClassroomForm() {
   const {
     register,
     handleSubmit,
-    formState: { errors },
     reset,
+    formState: { errors },
   } = useForm<JoinClassroomFormValues>({
     defaultValues: {
       joinCode: "",
@@ -52,9 +51,8 @@ export default function JoinClassroomForm() {
 
       reset();
 
-      router.push(
-        "/student/classrooms"
-      );
+      // We'll create this page next
+      router.push("/student/classrooms");
 
     } catch (error: any) {
 
@@ -77,6 +75,8 @@ export default function JoinClassroomForm() {
       onSubmit={handleSubmit(onSubmit)}
       className="space-y-6"
     >
+
+      {/* Join Code */}
 
       <div className="space-y-2">
 
@@ -104,6 +104,8 @@ export default function JoinClassroomForm() {
         )}
 
       </div>
+
+      {/* Submit */}
 
       <Button
         type="submit"

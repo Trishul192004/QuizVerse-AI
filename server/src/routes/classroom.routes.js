@@ -14,7 +14,11 @@ const {
   createClassroom,
   getTeacherClassrooms,
   deleteClassroom,
+  joinClassroom,
 } = require("../controllers/classroom.controller");
+
+
+
 /*
 =================================
 CREATE CLASSROOM
@@ -27,6 +31,20 @@ router.post(
   verifyToken,
   authorizeRoles("teacher"),
   createClassroom
+);
+
+/*
+=================================
+JOIN CLASSROOM
+POST /api/classroom/join
+=================================
+*/
+
+router.post(
+  "/join",
+  verifyToken,
+  authorizeRoles("student"),
+  joinClassroom
 );
 
 /*

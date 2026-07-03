@@ -95,3 +95,32 @@ async (
   return response.data;
 
 };
+
+/*
+========================================
+JOIN CLASSROOM
+POST /api/classroom/join
+========================================
+*/
+
+export interface JoinClassroomData {
+  joinCode: string;
+}
+
+export interface JoinClassroomResponse {
+  success: boolean;
+  message: string;
+}
+
+export const joinClassroom = async (
+  data: JoinClassroomData
+): Promise<JoinClassroomResponse> => {
+
+  const response = await api.post(
+    "/classroom/join",
+    data
+  );
+
+  return response.data;
+
+};
