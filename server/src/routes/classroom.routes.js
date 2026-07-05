@@ -15,6 +15,7 @@ const {
   getTeacherClassrooms,
   deleteClassroom,
   joinClassroom,
+  getStudentClassrooms,
 } = require("../controllers/classroom.controller");
 
 
@@ -76,4 +77,18 @@ router.delete(
   verifyToken,
   authorizeRoles("teacher"),
   deleteClassroom
+);
+
+/*
+=================================
+GET STUDENT CLASSROOMS
+GET /api/classroom/student
+=================================
+*/
+
+router.get(
+  "/student",
+  verifyToken,
+  authorizeRoles("student"),
+  getStudentClassrooms
 );

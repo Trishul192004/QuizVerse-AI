@@ -11,13 +11,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { joinClassroom } from "@/services/api/classroom.service";
+import { createClassroom } from "@/services/api/classroom.service";
 
-interface JoinClassroomFormValues {
-  joinCode: string;
+interface CreateClassroomFormValues {
+  name: string;
 }
 
-export default function JoinClassroomForm() {
+export default function ClassroomForm() {
 
   const router = useRouter();
 
@@ -29,14 +29,14 @@ export default function JoinClassroomForm() {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<JoinClassroomFormValues>({
+  } = useForm<CreateClassroomFormValues>({
     defaultValues: {
-      joinCode: "",
+      name: "",
     },
   });
 
   const onSubmit = async (
-    data: JoinClassroomFormValues
+    data: CreateClassroomFormValues
   ) => {
 
     try {
@@ -44,23 +44,33 @@ export default function JoinClassroomForm() {
       setLoading(true);
 
       const response =
-        await joinClassroom(data);
+        await createClassroom(data);
 
       toast.success(
-        response.message
+        response.message ?? "Classroom created successfully"
       );
 
       reset();
 
-      router.push(
-        "/student/classrooms"
-      );
+      router.push("/teacher/classrooms");
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+
+      const message =
+        error && typeof error === "object" &&
+        "response" in error &&
+        error.response &&
+        typeof error.response === "object" &&
+        "data" in error.response &&
+        error.response.data &&
+        typeof error.response.data === "object" &&
+        "message" in error.response.data &&
+        typeof error.response.data.message === "string"
+          ? error.response.data.message
+          : "Failed to create classroom";
 
       toast.error(
-        error?.response?.data?.message ??
-        "Failed to join classroom"
+        message
       );
 
     } finally {
@@ -80,24 +90,24 @@ export default function JoinClassroomForm() {
 
       <div className="space-y-2">
 
-        <Label htmlFor="joinCode">
-          Join Code
+        <Label htmlFor="name">
+          Classroom Name
         </Label>
 
         <Input
-          id="joinCode"
+          id="name"
           type="text"
-          placeholder="Enter classroom join code"
-          {...register("joinCode", {
-            required: "Join code is required",
+          placeholder="Enter classroom name"
+          {...register("name", {
+            required: "Classroom name is required",
           })}
         />
 
-        {errors.joinCode && (
+        {errors.name && (
 
           <p className="text-sm text-red-500">
 
-            {errors.joinCode.message}
+            {errors.name.message}
 
           </p>
 
@@ -112,8 +122,8 @@ export default function JoinClassroomForm() {
       >
 
         {loading
-          ? "Joining..."
-          : "Join Classroom"}
+          ? "Creating..."
+          : "Create Classroom"}
 
       </Button>
 

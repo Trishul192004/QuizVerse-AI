@@ -1,14 +1,22 @@
+import StudentClassroomGrid from "@/components/classroom/Student.ClassroomGrid";
+
 export default function StudentClassroomsPage() {
   return (
-    <div className="space-y-4 p-6">
+    <div className="space-y-8 p-6">
 
-      <h1 className="text-3xl font-bold text-white">
-        My Classrooms
-      </h1>
+      <div>
 
-      <p className="text-slate-400">
-        Student classrooms page is working.
-      </p>
+        <h1 className="text-3xl font-bold">
+          My Classrooms
+        </h1>
+
+        <p className="mt-1 text-slate-500">
+          View the classrooms you have joined.
+        </p>
+
+      </div>
+
+      <StudentClassroomGrid />
 
     </div>
   );

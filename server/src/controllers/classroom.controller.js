@@ -212,3 +212,42 @@ exports.joinClassroom = async (req, res) => {
 
   }
 };
+
+exports.getStudentClassrooms = async (
+  req,
+  res
+) => {
+  try {
+
+    const [rows] = await db.query(
+      `
+      SELECT
+        c.id,
+        c.name,
+        c.join_code,
+        c.created_at
+      FROM classrooms c
+      INNER JOIN classroom_students cs
+        ON c.id = cs.classroom_id
+      WHERE cs.student_id = ?
+      ORDER BY c.created_at DESC
+      `,
+      [req.user.id]
+    );
+
+    return res.status(200).json({
+      success: true,
+      classrooms: rows,
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch classrooms",
+    });
+
+  }
+};

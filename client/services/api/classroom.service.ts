@@ -41,7 +41,7 @@ export interface DeleteClassroomResponse {
 /*
 ========================================
 CREATE CLASSROOM
-POST /api/classroom/create
+POST /api/classrooms/create
 ========================================
 */
 
@@ -50,7 +50,7 @@ export const createClassroom = async (
 ): Promise<CreateClassroomResponse> => {
 
   const response = await api.post(
-    "/classroom/create",
+    "/classrooms/create",
     data
   );
 
@@ -61,7 +61,7 @@ export const createClassroom = async (
 /*
 ========================================
 GET TEACHER CLASSROOMS
-GET /api/classroom
+GET /api/classrooms
 ========================================
 */
 
@@ -69,7 +69,7 @@ export const getTeacherClassrooms =
 async (): Promise<GetTeacherClassroomsResponse> => {
 
   const response =
-    await api.get("/classroom");
+    await api.get("/classrooms");
 
   return response.data;
 
@@ -78,7 +78,7 @@ async (): Promise<GetTeacherClassroomsResponse> => {
 /*
 ========================================
 DELETE CLASSROOM
-DELETE /api/classroom/:id
+DELETE /api/classrooms/:id
 ========================================
 */
 
@@ -89,7 +89,7 @@ async (
 
   const response =
     await api.delete(
-      `/classroom/${id}`
+      `/classrooms/${id}`
     );
 
   return response.data;
@@ -99,7 +99,7 @@ async (
 /*
 ========================================
 JOIN CLASSROOM
-POST /api/classroom/join
+POST /api/classrooms/join
 ========================================
 */
 
@@ -117,9 +117,39 @@ export const joinClassroom = async (
 ): Promise<JoinClassroomResponse> => {
 
   const response = await api.post(
-    "/classroom/join",
+    "/classrooms/join",
     data
   );
+
+  return response.data;
+
+};
+
+
+/*
+========================================
+GET STUDENT CLASSROOMS
+GET /api/classrooms/student
+========================================
+*/
+
+export interface StudentClassroom {
+  id: number;
+  name: string;
+  join_code: string;
+  created_at: string;
+}
+
+export interface GetStudentClassroomsResponse {
+  success: boolean;
+  classrooms: StudentClassroom[];
+}
+
+export const getStudentClassrooms =
+async (): Promise<GetStudentClassroomsResponse> => {
+
+  const response =
+    await api.get("/classrooms/student");
 
   return response.data;
 

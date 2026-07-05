@@ -4,8 +4,14 @@ const cors = require("cors");
 const testRoute = require("./routes/test.route");
 const authRoutes = require("./routes/auth.routes");
 const classroomRoutes = require("./routes/classroom.routes");
+const quizRoutes = require("./routes/quiz.routes");
 
 const app = express();
+
+const jsonParser = express.json();
+const urlencodedParser = express.urlencoded({
+  extended: true,
+});
 
 /*
 =================================
@@ -15,7 +21,29 @@ GLOBAL MIDDLEWARE
 
 app.use(cors());
 
-app.use(express.json());
+app.use((req, res, next) => {
+  if (
+    req.method === "GET" ||
+    req.method === "HEAD" ||
+    req.method === "OPTIONS"
+  ) {
+    return next();
+  }
+
+  return jsonParser(req, res, next);
+});
+
+app.use((req, res, next) => {
+  if (
+    req.method === "GET" ||
+    req.method === "HEAD" ||
+    req.method === "OPTIONS"
+  ) {
+    return next();
+  }
+
+  return urlencodedParser(req, res, next);
+});
 
 /*
 =================================
@@ -41,14 +69,11 @@ app.use("/api/test", testRoute);
 
 app.use("/api/auth", authRoutes);
 
-/*
-=================================
-CLASSROOM ROUTES
-=================================
-*/
-
 app.use("/api/classrooms", classroomRoutes);
+
 app.use("/api/classroom", classroomRoutes);
+
+app.use("/api/quizzes", quizRoutes);
 
 /*
 =================================
@@ -61,6 +86,17 @@ app.use((req, res) => {
     success: false,
     message: "Route Not Found",
   });
+});
+
+app.use((err, req, res, next) => {
+  if (err && err.type === "entity.parse.failed") {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid JSON payload",
+    });
+  }
+
+  return next(err);
 });
 
 /*

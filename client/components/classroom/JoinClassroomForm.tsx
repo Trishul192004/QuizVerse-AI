@@ -54,11 +54,23 @@ export default function JoinClassroomForm() {
       // We'll create this page next
       router.push("/student/classrooms");
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+
+      const message =
+        error && typeof error === "object" &&
+        "response" in error &&
+        error.response &&
+        typeof error.response === "object" &&
+        "data" in error.response &&
+        error.response.data &&
+        typeof error.response.data === "object" &&
+        "message" in error.response.data &&
+        typeof error.response.data.message === "string"
+          ? error.response.data.message
+          : "Failed to join classroom";
 
       toast.error(
-        error?.response?.data?.message ??
-        "Failed to join classroom"
+        message
       );
 
     } finally {
@@ -123,4 +135,4 @@ export default function JoinClassroomForm() {
 
   );
 
-}
+}   
