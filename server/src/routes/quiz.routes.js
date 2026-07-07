@@ -12,7 +12,6 @@ const {
 
 const {
   createQuiz,
-  getClassroomQuizzes,
 } = require("../controllers/quiz.controller");
 
 /*
@@ -27,20 +26,6 @@ router.post(
   verifyToken,
   authorizeRoles("teacher"),
   createQuiz
-);
+  );
 
-/*
-=================================
-GET CLASSROOM QUIZZES
-GET /api/quizzes/classroom/:classroomId
-=================================
-*/
-
-router.get(
-  "/classroom/:classroomId",
-  verifyToken,
-  authorizeRoles("teacher"),
-  getClassroomQuizzes
-);
-
-module.exports = router;
+  module.exports = router;
