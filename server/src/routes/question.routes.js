@@ -9,11 +9,11 @@ const {
 const {
   authorizeRoles,
 } = require("../middleware/role.middleware");
-
-const {
+  const {
   createQuestion,
   getQuestionsByQuiz,
   updateQuestion,
+  deleteQuestion,
 } = require("../controllers/question.controller");
 
 /*
@@ -41,6 +41,20 @@ router.put(
   verifyToken,
   authorizeRoles("teacher"),
   updateQuestion
+);
+
+/*
+=================================
+DELETE QUESTION
+DELETE /api/questions/:id
+=================================
+*/
+
+router.delete(
+  "/:id",
+  verifyToken,
+  authorizeRoles("teacher"),
+  deleteQuestion
 );
 /*
 =================================

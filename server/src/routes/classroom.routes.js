@@ -9,21 +9,19 @@ const {
 const {
   authorizeRoles,
 } = require("../middleware/role.middleware");
-
 const {
   createClassroom,
   getTeacherClassrooms,
+  getClassroomById,
   deleteClassroom,
   joinClassroom,
   getStudentClassrooms,
-} = require("../controllers/classroom.controller");
+  } = require("../controllers/classroom.controller");
 
-
-
-/*
+  /*
 =================================
 CREATE CLASSROOM
-POST /api/classroom/create
+POST /api/classrooms/create
 =================================
 */
 
@@ -37,7 +35,7 @@ router.post(
 /*
 =================================
 JOIN CLASSROOM
-POST /api/classroom/join
+POST /api/classrooms/join
 =================================
 */
 
@@ -51,7 +49,7 @@ router.post(
 /*
 =================================
 GET TEACHER CLASSROOMS
-GET /api/classroom
+GET /api/classrooms
 =================================
 */
 
@@ -62,13 +60,24 @@ router.get(
   getTeacherClassrooms
 );
 
-module.exports = router;
+/*
+=================================
+GET SINGLE CLASSROOM
+GET /api/classrooms/:id
+=================================
+*/
 
+router.get(
+  "/:id",
+  verifyToken,
+  authorizeRoles("teacher"),
+  getClassroomById
+);
 
 /*
 =================================
 DELETE CLASSROOM
-DELETE /api/classroom/:id
+DELETE /api/classrooms/:id
 =================================
 */
 
@@ -82,7 +91,7 @@ router.delete(
 /*
 =================================
 GET STUDENT CLASSROOMS
-GET /api/classroom/student
+GET /api/classrooms/student
 =================================
 */
 
@@ -92,3 +101,5 @@ router.get(
   authorizeRoles("student"),
   getStudentClassrooms
 );
+
+module.exports = router;

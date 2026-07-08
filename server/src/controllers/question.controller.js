@@ -173,6 +173,8 @@ PUT /api/questions/:id
 */
 
 exports.updateQuestion = async (req, res) => {
+  console.log("updateQuestion reached. params:", req.params, "user:", req.user);
+  console.log("updateQuestion body:", req.body);
   try {
 
     const { id } = req.params;
@@ -284,6 +286,94 @@ exports.updateQuestion = async (req, res) => {
       success: true,
 
       message: "Question updated successfully",
+
+    });
+
+  }
+
+  catch (error) {
+
+    console.error(error);
+
+    return res.status(500).json({
+
+      success: false,
+
+      message: "Internal Server Error",
+
+    });
+
+  }
+
+};
+
+/*
+=================================
+DELETE QUESTION
+DELETE /api/questions/:id
+=================================
+*/
+
+exports.deleteQuestion = async (req, res) => {
+
+  try {
+
+    const { id } = req.params;
+
+    /*
+    =====================================
+    VERIFY QUESTION BELONGS TO TEACHER
+    =====================================
+    */
+
+    const [question] = await db.query(
+      `
+      SELECT
+        qn.id
+      FROM questions qn
+      JOIN quizzes q
+        ON qn.quiz_id = q.id
+      JOIN classrooms c
+        ON q.classroom_id = c.id
+      WHERE
+        qn.id = ?
+      AND
+        c.teacher_id = ?
+      `,
+      [
+        id,
+        req.user.id,
+      ]
+    );
+
+    if (question.length === 0) {
+
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+      });
+
+    }
+
+    /*
+    =====================================
+    DELETE QUESTION
+    =====================================
+    */
+
+    await db.query(
+      `
+      DELETE FROM questions
+      WHERE id = ?
+      `,
+      [id]
+    );
+
+    return res.status(200).json({
+
+      success: true,
+
+      message: "Question deleted successfully",
 
     });
 

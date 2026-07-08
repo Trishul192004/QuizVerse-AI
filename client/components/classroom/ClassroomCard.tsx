@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 import {
   Users,
   Copy,
@@ -15,7 +17,6 @@ interface ClassroomCardProps {
   joinCode: string;
   students: number;
   createdAt: string;
-
   onDelete: (id: number) => void;
 }
 
@@ -27,23 +28,35 @@ export default function ClassroomCard({
   createdAt,
   onDelete,
 }: ClassroomCardProps) {
+
+  const router = useRouter();
+
   const copyCode = async () => {
     try {
+
       await navigator.clipboard.writeText(joinCode);
 
       toast.success(
         "Join code copied successfully!"
       );
+
     } catch {
+
       toast.error(
         "Failed to copy join code"
       );
+
     }
   };
 
   return (
+
     <div
+      onClick={() =>
+        router.push(`/teacher/classrooms/${id}`)
+      }
       className="
+        cursor-pointer
         rounded-2xl
         border
         bg-white
@@ -55,6 +68,7 @@ export default function ClassroomCard({
         hover:shadow-lg
       "
     >
+
       <div className="flex items-center justify-between">
 
         <h2 className="text-xl font-bold">
@@ -64,7 +78,10 @@ export default function ClassroomCard({
         <div className="flex items-center gap-2">
 
           <button
-            onClick={copyCode}
+            onClick={(e) => {
+              e.stopPropagation();
+              copyCode();
+            }}
             className="
               rounded-lg
               p-2
@@ -76,7 +93,10 @@ export default function ClassroomCard({
           </button>
 
           <button
-            onClick={() => onDelete(id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(id);
+            }}
             className="
               rounded-lg
               p-2
@@ -130,5 +150,6 @@ export default function ClassroomCard({
       </div>
 
     </div>
+
   );
 }

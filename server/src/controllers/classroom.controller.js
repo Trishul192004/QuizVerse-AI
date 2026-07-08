@@ -251,3 +251,71 @@ exports.getStudentClassrooms = async (
 
   }
 };
+/*
+=================================
+GET SINGLE CLASSROOM
+GET /api/classrooms/:id
+=================================
+*/
+
+exports.getClassroomById = async (req, res) => {
+  try {
+
+    const { id } = req.params;
+
+    /*
+    =================================
+    VERIFY CLASSROOM BELONGS TO TEACHER
+    =================================
+    */
+
+    const [rows] = await db.query(
+      `
+      SELECT
+        c.id,
+        c.name,
+        c.join_code,
+        c.created_at,
+        COUNT(cs.student_id) AS students
+      FROM classrooms c
+      LEFT JOIN classroom_students cs
+        ON c.id = cs.classroom_id
+      WHERE
+        c.id = ?
+      AND
+        c.teacher_id = ?
+      GROUP BY
+        c.id,
+        c.name,
+        c.join_code,
+        c.created_at
+      `,
+      [
+        id,
+        req.user.id,
+      ]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Classroom not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      classroom: rows[0],
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+
+  }
+};
