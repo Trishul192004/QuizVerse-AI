@@ -2,7 +2,7 @@ import api from "./axios";
 
 /*
 ========================================
-INTERFACES
+CLASSROOM INTERFACES
 ========================================
 */
 
@@ -48,14 +48,12 @@ POST /api/classrooms/create
 export const createClassroom = async (
   data: CreateClassroomData
 ): Promise<CreateClassroomResponse> => {
-
   const response = await api.post(
     "/classrooms/create",
     data
   );
 
   return response.data;
-
 };
 
 /*
@@ -65,14 +63,12 @@ GET /api/classrooms
 ========================================
 */
 
-export const getTeacherClassrooms =
-async (): Promise<GetTeacherClassroomsResponse> => {
-
-  const response =
-    await api.get("/classrooms");
+export const getTeacherClassrooms = async (): Promise<GetTeacherClassroomsResponse> => {
+  const response = await api.get(
+    "/classrooms"
+  );
 
   return response.data;
-
 };
 
 /*
@@ -82,18 +78,14 @@ DELETE /api/classrooms/:id
 ========================================
 */
 
-export const deleteClassroom =
-async (
+export const deleteClassroom = async (
   id: number
 ): Promise<DeleteClassroomResponse> => {
-
-  const response =
-    await api.delete(
-      `/classrooms/${id}`
-    );
+  const response = await api.delete(
+    `/classrooms/${id}`
+  );
 
   return response.data;
-
 };
 
 /*
@@ -115,16 +107,13 @@ export interface JoinClassroomResponse {
 export const joinClassroom = async (
   data: JoinClassroomData
 ): Promise<JoinClassroomResponse> => {
-
   const response = await api.post(
     "/classrooms/join",
     data
   );
 
   return response.data;
-
 };
-
 
 /*
 ========================================
@@ -145,12 +134,77 @@ export interface GetStudentClassroomsResponse {
   classrooms: StudentClassroom[];
 }
 
-export const getStudentClassrooms =
-async (): Promise<GetStudentClassroomsResponse> => {
-
-  const response =
-    await api.get("/classrooms/student");
+export const getStudentClassrooms = async (): Promise<GetStudentClassroomsResponse> => {
+  const response = await api.get(
+    "/classrooms/student"
+  );
 
   return response.data;
+};
 
+/*
+========================================
+GET SINGLE CLASSROOM
+GET /api/classrooms/:id
+========================================
+*/
+
+export interface ClassroomDetails {
+  id: number;
+  name: string;
+  join_code: string;
+  created_at: string;
+  students: number;
+}
+
+export interface GetClassroomResponse {
+  success: boolean;
+  classroom: ClassroomDetails;
+}
+
+export const getClassroom = async (
+  id: number
+): Promise<GetClassroomResponse> => {
+  const response = await api.get(
+    `/classrooms/${id}`
+  );
+
+  return response.data;
+};
+
+/*
+========================================
+QUIZ INTERFACES
+========================================
+*/
+
+export interface Quiz {
+  id: number;
+  title: string;
+  description: string;
+  time_limit: number;
+  total_marks: number;
+  created_at: string;
+}
+
+export interface GetClassroomQuizzesResponse {
+  success: boolean;
+  quizzes: Quiz[];
+}
+
+/*
+========================================
+GET QUIZZES OF A CLASSROOM
+GET /api/quizzes/classroom/:classroomId
+========================================
+*/
+
+export const getClassroomQuizzes = async (
+  classroomId: number
+): Promise<GetClassroomQuizzesResponse> => {
+  const response = await api.get(
+    `/quizzes/classroom/${classroomId}`
+  );
+
+  return response.data;
 };
