@@ -150,3 +150,244 @@ exports.getClassroomQuizzes = async (
 
   }
 };
+
+/*
+=================================
+GET SINGLE QUIZ
+GET /api/quizzes/:id
+=================================
+*/
+
+exports.getQuizById = async (req, res) => {
+
+  try {
+
+    const { id } = req.params;
+
+    const [quiz] = await db.query(
+      `
+      SELECT
+        id,
+        classroom_id,
+        title,
+        description,
+        time_limit,
+        total_marks,
+        created_at
+      FROM quizzes
+      WHERE
+        id = ?
+      AND
+        teacher_id = ?
+      `,
+      [
+        id,
+        req.user.id,
+      ]
+    );
+
+    if (quiz.length === 0) {
+
+      return res.status(404).json({
+        success: false,
+        message: "Quiz not found",
+      });
+
+    }
+
+    return res.status(200).json({
+
+      success: true,
+
+      quiz: quiz[0],
+
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return res.status(500).json({
+
+      success: false,
+
+      message: "Internal Server Error",
+
+    });
+
+  }
+
+};
+
+/*
+=================================
+UPDATE QUIZ
+PUT /api/quizzes/:id
+=================================
+*/
+
+exports.updateQuiz = async (req, res) => {
+
+  try {
+
+    const { id } = req.params;
+
+    const {
+      title,
+      description,
+      time_limit,
+      total_marks,
+    } = req.body;
+
+    if (
+      !title ||
+      !time_limit
+    ) {
+
+      return res.status(400).json({
+        success: false,
+        message: "Title and time limit are required",
+      });
+
+    }
+
+    const [quiz] = await db.query(
+      `
+      SELECT id
+      FROM quizzes
+      WHERE
+        id = ?
+      AND
+        teacher_id = ?
+      `,
+      [
+        id,
+        req.user.id,
+      ]
+    );
+
+    if (quiz.length === 0) {
+
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+      });
+
+    }
+
+    await db.query(
+      `
+      UPDATE quizzes
+      SET
+        title = ?,
+        description = ?,
+        time_limit = ?,
+        total_marks = ?
+      WHERE
+        id = ?
+      `,
+      [
+        title,
+        description,
+        time_limit,
+        total_marks || 0,
+        id,
+      ]
+    );
+
+    return res.status(200).json({
+
+      success: true,
+
+      message: "Quiz updated successfully",
+
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return res.status(500).json({
+
+      success: false,
+
+      message: "Internal Server Error",
+
+    });
+
+  }
+
+};
+
+
+/*
+=================================
+DELETE QUIZ
+DELETE /api/quizzes/:id
+=================================
+*/
+
+exports.deleteQuiz = async (req, res) => {
+
+  try {
+
+    const { id } = req.params;
+
+    const [quiz] = await db.query(
+      `
+      SELECT id
+      FROM quizzes
+      WHERE
+        id = ?
+      AND
+        teacher_id = ?
+      `,
+      [
+        id,
+        req.user.id,
+      ]
+    );
+
+    if (quiz.length === 0) {
+
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+      });
+
+    }
+
+    await db.query(
+      `
+      DELETE
+      FROM quizzes
+      WHERE id = ?
+      `,
+      [id]
+    );
+
+    return res.status(200).json({
+
+      success: true,
+
+      message: "Quiz deleted successfully",
+
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return res.status(500).json({
+
+      success: false,
+
+      message: "Internal Server Error",
+
+    });
+
+  }
+
+};
+
+

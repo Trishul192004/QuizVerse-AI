@@ -1,6 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
+
+import CreateQuizDialog from "@/components/quiz/CreateQuizDialog";
 
 import {
   getClassroom,
@@ -18,6 +21,9 @@ interface PageProps {
 export default function ClassroomDetailsPage({
   params,
 }: PageProps) {
+  const [classroomId, setClassroomId] =
+    useState(0);
+
   const [classroom, setClassroom] =
     useState<ClassroomDetails | null>(null);
 
@@ -27,39 +33,39 @@ export default function ClassroomDetailsPage({
   const [loading, setLoading] =
     useState(true);
 
+  const loadData = async () => {
+    try {
+      setLoading(true);
+
+      const { id } = await params;
+
+      const parsedId = Number(id);
+
+      setClassroomId(parsedId);
+
+      const classroomRes =
+        await getClassroom(parsedId);
+
+      setClassroom(classroomRes.classroom);
+
+      const quizRes =
+        await getClassroomQuizzes(parsedId);
+
+      setQuizzes(quizRes.quizzes);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const { id } = await params;
-
-        const classroomRes =
-          await getClassroom(Number(id));
-
-        setClassroom(
-          classroomRes.classroom
-        );
-
-        const quizRes =
-          await getClassroomQuizzes(
-            Number(id)
-          );
-
-        setQuizzes(
-          quizRes.quizzes
-        );
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadData();
   }, [params]);
 
   if (loading) {
     return (
-      <div className="p-8">
+      <div className="p-8 text-lg">
         Loading...
       </div>
     );
@@ -67,7 +73,7 @@ export default function ClassroomDetailsPage({
 
   if (!classroom) {
     return (
-      <div className="p-8">
+      <div className="p-8 text-lg">
         Classroom not found.
       </div>
     );
@@ -76,15 +82,23 @@ export default function ClassroomDetailsPage({
   return (
     <div className="space-y-8 p-8">
 
+      {/* Header */}
+
       <div>
 
         <h1 className="text-4xl font-bold">
           {classroom.name}
         </h1>
 
+        <p className="mt-2 text-slate-500">
+          Manage quizzes for this classroom
+        </p>
+
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
+      {/* Statistics */}
+
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
 
         <div className="rounded-xl border p-6">
 
@@ -126,71 +140,99 @@ export default function ClassroomDetailsPage({
 
       </div>
 
+      {/* Quiz Header */}
+
       <div className="flex items-center justify-between">
 
         <h2 className="text-3xl font-bold">
           Quizzes
         </h2>
 
-        <button
-          className="
-            rounded-lg
-            bg-violet-600
-            px-5
-            py-3
-            text-white
-            hover:bg-violet-700
-          "
-        >
-          + Create Quiz
-        </button>
+        <CreateQuizDialog
+          classroomId={classroomId}
+          onSuccess={loadData}
+        />
 
       </div>
 
+      {/* Quiz List */}
+
       {quizzes.length === 0 ? (
 
-        <div className="rounded-xl border p-8 text-slate-500">
-
-          No quizzes yet.
-
+        <div
+          className="
+            rounded-xl
+            border
+            border-dashed
+            p-10
+            text-center
+            text-slate-500
+          "
+        >
+          No quizzes created yet.
         </div>
 
       ) : (
 
-        <div className="grid gap-4">
+        <div className="space-y-4">
 
           {quizzes.map((quiz) => (
 
-            <div
+            <Link
               key={quiz.id}
-              className="
-                rounded-xl
-                border
-                p-6
-              "
+              href={`/teacher/quizzes/${quiz.id}`}
             >
 
-              <h3 className="text-xl font-bold">
-                {quiz.title}
-              </h3>
+              <div
+                className="
+                  cursor-pointer
+                  rounded-xl
+                  border
+                  p-6
+                  transition-all
+                  hover:border-violet-500
+                  hover:shadow-lg
+                "
+              >
 
-              <p className="mt-2 text-slate-600">
-                {quiz.description}
-              </p>
+                <div className="flex items-start justify-between">
 
-              <div className="mt-4 flex gap-8">
+                  <div>
 
-                <span>
-                  ⏱ {quiz.time_limit} mins
-                </span>
+                    <h3 className="text-xl font-bold">
+                      {quiz.title}
+                    </h3>
 
-                <span>
-                  📝 {quiz.total_marks} Marks
-                </span>
+                    <p className="mt-2 text-slate-600">
+                      {quiz.description}
+                    </p>
+
+                  </div>
+
+                </div>
+
+                <div className="mt-5 flex flex-wrap gap-6 text-sm">
+
+                  <span>
+                    ⏱ {quiz.time_limit} mins
+                  </span>
+
+                  <span>
+                    📝 {quiz.total_marks} Marks
+                  </span>
+
+                  <span>
+                    📅{" "}
+                    {new Date(
+                      quiz.created_at
+                    ).toLocaleDateString()}
+                  </span>
+
+                </div>
 
               </div>
 
-            </div>
+            </Link>
 
           ))}
 
