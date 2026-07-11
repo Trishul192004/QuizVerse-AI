@@ -19,10 +19,31 @@ app.use(cors());
 
 app.use(express.json());
 
+app.use(express.urlencoded({ extended: true }));
+
+/*
+=================================
+DEBUG ROUTE
+=================================
+*/
+
+app.post("/debug", (req, res) => {
+
+  console.log("\n========= DEBUG =========");
+  console.log(req.headers);
+  console.log(req.body);
+  console.log("=========================\n");
+
+  res.json({
+    success: true,
+    body: req.body,
+  });
+
+});
+
 /*
 =================================
 HEALTH CHECK
-GET /
 =================================
 */
 
@@ -43,35 +64,16 @@ app.use("/api/test", testRoute);
 
 app.use("/api/auth", authRoutes);
 
-/*
-=================================
-CLASSROOM ROUTES
-=================================
-*/
-
 app.use("/api/classrooms", classroomRoutes);
 app.use("/api/classroom", classroomRoutes);
 
-/*
-=================================
-QUIZ ROUTES
-=================================
-*/
-
 app.use("/api/quizzes", quizRoutes);
-
-/*
-=================================
-QUESTION ROUTES
-=================================
-*/
 
 app.use("/api/questions", questionRoutes);
 
 /*
 =================================
-404 ROUTE HANDLER
-(KEEP THIS LAST)
+404
 =================================
 */
 
@@ -80,6 +82,6 @@ app.use((req, res) => {
     success: false,
     message: "Route Not Found",
   });
-  });
+});
 
-  module.exports = app;
+module.exports = app;

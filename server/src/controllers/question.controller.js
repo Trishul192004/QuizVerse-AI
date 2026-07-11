@@ -8,7 +8,25 @@ POST /api/questions/create
 */
 
 exports.createQuestion = async (req, res) => {
+
+  console.log("\n========== CREATE QUESTION ==========");
+  console.log("Headers:");
+  console.log(req.headers);
+
+  console.log("\nBody:");
+  console.log(req.body);
+
+  console.log("=====================================\n");
+
   try {
+
+    if (!req.body) {
+      return res.status(400).json({
+        success: false,
+        message: "Request body is undefined",
+      });
+    }
+
     const {
       quiz_id,
       question,
@@ -35,7 +53,9 @@ exports.createQuestion = async (req, res) => {
       });
     }
 
-    if (!["A", "B", "C", "D"].includes(correct_option)) {
+    if (
+      !["A", "B", "C", "D"].includes(correct_option)
+    ) {
       return res.status(400).json({
         success: false,
         message: "Correct option must be A, B, C or D",
@@ -54,13 +74,16 @@ exports.createQuestion = async (req, res) => {
         q.id
       FROM quizzes q
       INNER JOIN classrooms c
-      ON q.classroom_id = c.id
+        ON q.classroom_id = c.id
       WHERE
         q.id = ?
       AND
         c.teacher_id = ?
       `,
-      [quiz_id, req.user.id]
+      [
+        quiz_id,
+        req.user.id,
+      ]
     );
 
     if (quiz.length === 0) {
@@ -111,16 +134,23 @@ exports.createQuestion = async (req, res) => {
         id: result.insertId,
       },
     });
+
   } catch (error) {
+
+    console.error("\n========== CREATE QUESTION ERROR ==========");
     console.error(error);
+    console.error("SQL Message:", error.sqlMessage);
+    console.error("SQL Code:", error.code);
+    console.error("==========================================\n");
 
     return res.status(500).json({
       success: false,
       message: "Internal Server Error",
     });
-  }
-};
 
+  }
+
+  };
 /*
 =================================
 GET QUESTIONS OF A QUIZ

@@ -8,6 +8,7 @@ INTERFACES
 
 export interface Question {
   id: number;
+
   question: string;
 
   option_a: string;
@@ -21,6 +22,12 @@ export interface Question {
 
   created_at: string;
 }
+
+/*
+========================================
+CREATE QUESTION
+========================================
+*/
 
 export interface CreateQuestionData {
   quiz_id: number;
@@ -37,8 +44,35 @@ export interface CreateQuestionData {
   marks: number;
 }
 
-export interface UpdateQuestionData {
+export interface CreateQuestionResponse {
+  success: boolean;
 
+  message: string;
+
+  question?: {
+    id: number;
+  };
+}
+
+/*
+========================================
+GET QUESTIONS
+========================================
+*/
+
+export interface QuestionsResponse {
+  success: boolean;
+
+  questions: Question[];
+}
+
+/*
+========================================
+UPDATE QUESTION
+========================================
+*/
+
+export interface UpdateQuestionData {
   question: string;
 
   option_a: string;
@@ -51,28 +85,34 @@ export interface UpdateQuestionData {
   marks: number;
 }
 
-export interface QuestionResponse {
+export interface UpdateQuestionResponse {
   success: boolean;
+
   message: string;
 }
 
-export interface QuestionsResponse {
+/*
+========================================
+DELETE QUESTION
+========================================
+*/
 
+export interface DeleteQuestionResponse {
   success: boolean;
 
-  questions: Question[];
-
+  message: string;
 }
 
 /*
 ========================================
 CREATE QUESTION
+POST /api/questions/create
 ========================================
 */
 
 export const createQuestion = async (
   data: CreateQuestionData
-): Promise<QuestionResponse> => {
+): Promise<CreateQuestionResponse> => {
 
   const response = await api.post(
     "/questions/create",
@@ -85,6 +125,7 @@ export const createQuestion = async (
 /*
 ========================================
 GET QUESTIONS OF QUIZ
+GET /api/questions/quiz/:quizId
 ========================================
 */
 
@@ -102,13 +143,14 @@ export const getQuestionsByQuiz = async (
 /*
 ========================================
 UPDATE QUESTION
+PUT /api/questions/:id
 ========================================
 */
 
 export const updateQuestion = async (
   id: number,
   data: UpdateQuestionData
-): Promise<QuestionResponse> => {
+): Promise<UpdateQuestionResponse> => {
 
   const response = await api.put(
     `/questions/${id}`,
@@ -121,12 +163,13 @@ export const updateQuestion = async (
 /*
 ========================================
 DELETE QUESTION
+DELETE /api/questions/:id
 ========================================
 */
 
 export const deleteQuestion = async (
   id: number
-): Promise<QuestionResponse> => {
+): Promise<DeleteQuestionResponse> => {
 
   const response = await api.delete(
     `/questions/${id}`
