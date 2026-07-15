@@ -44,7 +44,15 @@ export default function AddQuestionDialog({
     useState(false);
 
   const [form, setForm] =
-    useState({
+    useState<{
+      question: string;
+      option_a: string;
+      option_b: string;
+      option_c: string;
+      option_d: string;
+      correct_option: "A" | "B" | "C" | "D";
+      marks: number;
+    }>({
       question: "",
 
       option_a: "",
@@ -282,7 +290,7 @@ export default function AddQuestionDialog({
                   setForm({
                     ...form,
                     correct_option:
-                      e.target.value,
+                      e.target.value as "A" | "B" | "C" | "D",
                   })
                 }
               >
