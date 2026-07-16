@@ -9,7 +9,7 @@ import StudentClassroomCard from "./StudentClassroomCard";
 import {
   getStudentClassrooms,
   StudentClassroom,
-} from "@/services/api/classroom.service";
+} from "@/services/api/student.service";
 
 export default function StudentClassroomGrid() {
 
@@ -42,14 +42,14 @@ export default function StudentClassroomGrid() {
 
         const message =
           error && typeof error === "object" &&
-          "response" in error &&
-          error.response &&
-          typeof error.response === "object" &&
-          "data" in error.response &&
-          error.response.data &&
-          typeof error.response.data === "object" &&
-          "message" in error.response.data &&
-          typeof error.response.data.message === "string"
+            "response" in error &&
+            error.response &&
+            typeof error.response === "object" &&
+            "data" in error.response &&
+            error.response.data &&
+            typeof error.response.data === "object" &&
+            "message" in error.response.data &&
+            typeof error.response.data.message === "string"
             ? error.response.data.message
             : "Failed to load classrooms";
 

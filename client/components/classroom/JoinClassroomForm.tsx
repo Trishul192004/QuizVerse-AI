@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { joinClassroom } from "@/services/api/classroom.service";
+import { joinClassroom } from "@/services/api/student.service";
 
 interface JoinClassroomFormValues {
   joinCode: string;
@@ -43,7 +43,7 @@ export default function JoinClassroomForm() {
       setLoading(true);
 
       const response =
-        await joinClassroom(data);
+        await joinClassroom(data.joinCode.toUpperCase());
 
       toast.success(
         response.message
@@ -58,14 +58,14 @@ export default function JoinClassroomForm() {
 
       const message =
         error && typeof error === "object" &&
-        "response" in error &&
-        error.response &&
-        typeof error.response === "object" &&
-        "data" in error.response &&
-        error.response.data &&
-        typeof error.response.data === "object" &&
-        "message" in error.response.data &&
-        typeof error.response.data.message === "string"
+          "response" in error &&
+          error.response &&
+          typeof error.response === "object" &&
+          "data" in error.response &&
+          error.response.data &&
+          typeof error.response.data === "object" &&
+          "message" in error.response.data &&
+          typeof error.response.data.message === "string"
           ? error.response.data.message
           : "Failed to join classroom";
 
