@@ -58,3 +58,12 @@ export const getStudentClassrooms = async (): Promise<StudentClassroomsResponse>
 
   return response.data;
 };
+
+
+export const getStudentClassroomQuizzes = async (classroomId: number) => {
+  const response = await api.get(
+    `/student/classrooms/${classroomId}/quizzes`
+  );
+
+  return response.data;
+};

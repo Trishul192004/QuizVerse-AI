@@ -1,10 +1,10 @@
 const mysql = require("mysql2");
 
 const connection = mysql.createPool({
-  host: "localhost",
+  host: process.env.DB_HOST || "localhost",
   user: "root",
-  password: "Trishul@1992004",
-  database: "quizverse_ai"
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME || "quizverse_ai",
 });
 
 module.exports = connection.promise();

@@ -1,4 +1,5 @@
 const express = require("express");
+require("dotenv").config();
 const cors = require("cors");
 
 const testRoute = require("./routes/test.route");
@@ -16,7 +17,12 @@ GLOBAL MIDDLEWARE
 =================================
 */
 
-app.use(cors());
+app.use(cors({
+  origin: true,
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
 
 app.use(express.json());
 
@@ -71,8 +77,6 @@ app.use("/api/test", testRoute);
 app.use("/api/auth", authRoutes);
 
 app.use("/api/classrooms", classroomRoutes);
-
-app.use("/api/classroom", classroomRoutes);
 
 app.use("/api/quizzes", quizRoutes);
 

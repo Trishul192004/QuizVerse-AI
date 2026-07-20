@@ -13,6 +13,7 @@ const {
 const {
   joinClassroom,
   getStudentClassrooms,
+  getStudentClassroomQuizzes,
 } = require("../controllers/student.controller");
 
 /*
@@ -27,20 +28,19 @@ router.post(
   verifyToken,
   authorizeRoles("student"),
   joinClassroom
-);
-
-/*
-=================================
-GET STUDENT CLASSROOMS
-GET /api/student/classrooms
-=================================
-*/
-
+  );
+  
 router.get(
   "/classrooms",
   verifyToken,
   authorizeRoles("student"),
   getStudentClassrooms
+);
+router.get(
+  "/classrooms/:classroomId/quizzes",
+  verifyToken,
+  authorizeRoles("student"),
+  getStudentClassroomQuizzes
 );
 
 module.exports = router;

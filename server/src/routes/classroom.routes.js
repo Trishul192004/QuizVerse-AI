@@ -18,7 +18,7 @@ const {
   getStudentClassrooms,
   } = require("../controllers/classroom.controller");
 
-  /*
+/*
 =================================
 CREATE CLASSROOM
 POST /api/classrooms/create
@@ -48,6 +48,20 @@ router.post(
 
 /*
 =================================
+GET STUDENT CLASSROOMS
+GET /api/classrooms/student
+=================================
+*/
+
+router.get(
+  "/student",
+  verifyToken,
+  authorizeRoles("student"),
+  getStudentClassrooms
+);
+
+/*
+=================================
 GET TEACHER CLASSROOMS
 GET /api/classrooms
 =================================
@@ -58,20 +72,6 @@ router.get(
   verifyToken,
   authorizeRoles("teacher"),
   getTeacherClassrooms
-);
-
-/*
-=================================
-GET SINGLE CLASSROOM
-GET /api/classrooms/:id
-=================================
-*/
-
-router.get(
-  "/:id",
-  verifyToken,
-  authorizeRoles("teacher"),
-  getClassroomById
 );
 
 /*
@@ -90,16 +90,16 @@ router.delete(
 
 /*
 =================================
-GET STUDENT CLASSROOMS
-GET /api/classrooms/student
+GET SINGLE CLASSROOM
+GET /api/classrooms/:id
 =================================
 */
 
 router.get(
-  "/student",
+  "/:id",
   verifyToken,
-  authorizeRoles("student"),
-  getStudentClassrooms
+  authorizeRoles("teacher"),
+  getClassroomById
 );
 
 module.exports = router;

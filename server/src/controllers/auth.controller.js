@@ -250,18 +250,6 @@ const getCurrentUser = async (
   }
 };
 
-module.exports = {
-  register,
-  login,
-  getCurrentUser,
-};
-
-/*
-=================================
-REFRESH ACCESS TOKEN
-POST /api/auth/refresh
-=================================
-*/
 /*
 =================================
 REFRESH ACCESS TOKEN

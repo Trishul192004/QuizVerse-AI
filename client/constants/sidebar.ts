@@ -18,7 +18,7 @@ export const sidebarItems: SidebarSection[] = [
     items: [
       {
         title: "Dashboard",
-        href: "/teacher",
+        href: "/teacher/dashboard",
         icon: LayoutDashboard,
       },
       {
@@ -50,13 +50,18 @@ export const sidebarItems: SidebarSection[] = [
     items: [
       {
         title: "Dashboard",
-        href: "/student",
+        href: "/student/dashboard",
         icon: LayoutDashboard,
+      },
+      {
+        title: "My Classrooms",
+        href: "/student/classrooms",
+        icon: GraduationCap,
       },
       {
         title: "Join Classroom",
         href: "/student/join",
-        icon: GraduationCap,
+        icon: Users,
       },
       {
         title: "Friends",
