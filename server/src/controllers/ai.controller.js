@@ -1,23 +1,47 @@
-const { generateText } = require("../services/ai.service");
+const {
+  generateText,
+  generateQuiz,
+} = require("../services/ai.service");
 
 const testAI = async (req, res) => {
   try {
     const reply = await generateText(
-      "Say hello to QuizVerse AI in one sentence."
+      "Say hello to QuizVerse AI."
     );
 
-    return res.status(200).json({
+    res.json({
       success: true,
       response: reply,
     });
-  } catch (error) {
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+const createQuiz = async (req, res) => {
+  try {
+    const quiz = await generateQuiz(req.body);
+
+    return res.json({
+      success: true,
+      data: quiz,
+    });
+  } catch (err) {
+    console.error("========== CREATE QUIZ ERROR ==========");
+    console.error(err);
+    console.error("======================================");
+
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: err.message,
     });
   }
 };
 
 module.exports = {
   testAI,
+  createQuiz,
 };
