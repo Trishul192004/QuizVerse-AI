@@ -3,6 +3,11 @@ const db = require("../config/db");
 
 const verifyToken = async (req, res, next) => {
   try {
+    // Debug logs
+    console.log("\n========== VERIFY TOKEN ==========");
+    console.log("Authorization Header:", req.headers.authorization);
+    console.log("All Headers:", req.headers);
+
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
@@ -12,7 +17,9 @@ const verifyToken = async (req, res, next) => {
       });
     }
 
-    const parts = authHeader.split(" ");
+    const parts = authHeader.trim().split(/\s+/);
+
+    console.log("Split Parts:", parts);
 
     if (parts.length !== 2 || parts[0] !== "Bearer") {
       return res.status(401).json({
@@ -22,6 +29,8 @@ const verifyToken = async (req, res, next) => {
     }
 
     const token = parts[1];
+
+    console.log("Token:", token);
 
     const decoded = jwt.verify(
       token,
@@ -40,12 +49,13 @@ const verifyToken = async (req, res, next) => {
     }
 
     req.user = decoded;
-    console.log("verifyToken:", req.user);
-    console.log('verifyToken - decoded payload:', decoded);
+
+    console.log("Decoded Payload:", decoded);
+    console.log("=================================\n");
 
     next();
   } catch (err) {
-    console.log("JWT Error:", err.message);
+    console.error("JWT Error:", err);
 
     return res.status(401).json({
       success: false,

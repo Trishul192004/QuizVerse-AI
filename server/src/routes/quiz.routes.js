@@ -9,20 +9,35 @@ const {
 const {
   authorizeRoles,
 } = require("../middleware/role.middleware");
-  const {
+
+const {
   createQuiz,
   getClassroomQuizzes,
   getQuizById,
   updateQuiz,
   deleteQuiz,
-  } = require("../controllers/quiz.controller");
+  saveAIQuiz,
+} = require("../controllers/quiz.controller");
+
+/*
+=================================
+SAVE AI GENERATED QUIZ
+POST /api/quizzes/save-ai
+=================================
+*/
+router.post(
+  "/save-ai",
+  verifyToken,
+  authorizeRoles("teacher"),
+  saveAIQuiz
+);
+
 /*
 =================================
 CREATE QUIZ
 POST /api/quizzes/create
 =================================
 */
-
 router.post(
   "/create",
   verifyToken,
@@ -36,7 +51,6 @@ GET QUIZZES OF A CLASSROOM
 GET /api/quizzes/classroom/:classroomId
 =================================
 */
-
 router.get(
   "/classroom/:classroomId",
   verifyToken,
@@ -44,14 +58,12 @@ router.get(
   getClassroomQuizzes
 );
 
-
 /*
 =================================
 GET SINGLE QUIZ
 GET /api/quizzes/:id
 =================================
 */
-
 router.get(
   "/:id",
   verifyToken,
@@ -65,7 +77,6 @@ UPDATE QUIZ
 PUT /api/quizzes/:id
 =================================
 */
-
 router.put(
   "/:id",
   verifyToken,
@@ -79,11 +90,11 @@ DELETE QUIZ
 DELETE /api/quizzes/:id
 =================================
 */
-
-router.delete(
+  router.delete(
   "/:id",
   verifyToken,
   authorizeRoles("teacher"),
   deleteQuiz
 );
+
 module.exports = router;

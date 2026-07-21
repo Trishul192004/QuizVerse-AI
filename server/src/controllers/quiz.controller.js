@@ -118,21 +118,31 @@ exports.getClassroomQuizzes = async (
       });
     }
 
-    const [quizzes] = await db.query(
-      `
-      SELECT
-        id,
-        title,
-        description,
-        time_limit,
-        total_marks,
-        created_at
-      FROM quizzes
-      WHERE classroom_id = ?
-      ORDER BY created_at DESC
-      `,
-      [classroomId]
-    );
+const [quizzes] = await db.query(
+  `
+  SELECT
+    q.id,
+    q.title,
+    q.description,
+    q.time_limit,
+    q.total_marks,
+    q.created_at,
+    COUNT(ques.id) AS total_questions
+  FROM quizzes q
+  LEFT JOIN questions ques
+    ON q.id = ques.quiz_id
+  WHERE q.classroom_id = ?
+  GROUP BY
+    q.id,
+    q.title,
+    q.description,
+    q.time_limit,
+    q.total_marks,
+    q.created_at
+  ORDER BY q.created_at DESC
+  `,
+  [classroomId]
+);
 
     return res.status(200).json({
       success: true,
@@ -391,3 +401,112 @@ exports.deleteQuiz = async (req, res) => {
 };
 
 
+exports.saveAIQuiz = async (req, res) => {
+  const connection = await db.getConnection();
+
+  try {
+    const {
+      classroom_id,
+      title,
+      description,
+      time_limit,
+      questions,
+    } = req.body;
+
+    if (
+      !classroom_id ||
+      !title ||
+      !time_limit ||
+      !questions ||
+      questions.length === 0
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields",
+      });
+    }
+
+    await connection.beginTransaction();
+
+    const totalMarks = questions.reduce(
+      (sum, q) => sum + (q.marks || 1),
+      0
+    );
+
+    const [quizResult] = await connection.query(
+      `
+      INSERT INTO quizzes
+      (
+        classroom_id,
+        teacher_id,
+        title,
+        description,
+        time_limit,
+        total_marks
+      )
+      VALUES (?, ?, ?, ?, ?, ?)
+      `,
+      [
+        classroom_id,
+        req.user.id,
+        title,
+        description || "",
+        time_limit,
+        totalMarks,
+      ]
+    );
+
+    const quizId = quizResult.insertId;
+
+    for (const q of questions) {
+      await connection.query(
+        `
+        INSERT INTO questions
+        (
+          quiz_id,
+          question,
+          option_a,
+          option_b,
+          option_c,
+          option_d,
+          correct_option,
+          marks,
+          explanation
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+        [
+          quizId,
+          q.question,
+          q.options[0],
+          q.options[1],
+          q.options[2],
+          q.options[3],
+          q.correct_option,
+          q.marks || 1,
+          q.explanation || null,
+        ]
+      );
+    }
+
+    await connection.commit();
+
+    return res.status(201).json({
+      success: true,
+      quizId,
+      message: "Quiz saved successfully",
+    });
+
+  } catch (err) {
+    await connection.rollback();
+    console.error(err);
+
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+
+  } finally {
+    connection.release();
+  }
+};
