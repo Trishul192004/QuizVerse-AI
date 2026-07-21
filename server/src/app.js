@@ -1,6 +1,7 @@
 const express = require("express");
 require("dotenv").config();
 const cors = require("cors");
+const teacherRoutes = require("./routes/teacher.routes");
 
 /*
 =================================
@@ -34,7 +35,8 @@ app.use(
 );
 
 app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
+app.use("/api/teacher", teacherRoutes);
 
 /*
 =================================
