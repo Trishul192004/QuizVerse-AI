@@ -167,14 +167,12 @@ GET SINGLE QUIZ
 GET /api/quizzes/:id
 =================================
 */
-
-exports.getQuizById = async (req, res) => {
-
+  exports.getQuizById = async (req, res) => {
   try {
+      const { id } = req.params;
 
-    const { id } = req.params;
-
-    const [quiz] = await db.query(
+    // Verify quiz belongs to teacher
+    const [quizRows] = await db.query(
       `
       SELECT
         id,
@@ -185,50 +183,56 @@ exports.getQuizById = async (req, res) => {
         total_marks,
         created_at
       FROM quizzes
-      WHERE
-        id = ?
-      AND
-        teacher_id = ?
+      WHERE id = ?
+      AND teacher_id = ?
       `,
-      [
-        id,
-        req.user.id,
-      ]
+      [id, req.user.id]
     );
 
-    if (quiz.length === 0) {
-
+    if (quizRows.length === 0) {
       return res.status(404).json({
         success: false,
         message: "Quiz not found",
       });
-
     }
 
-    return res.status(200).json({
+    // Fetch all questions
+    const [questions] = await db.query(
+      `
+      SELECT
+        id,
+        question,
+        option_a,
+        option_b,
+        option_c,
+        option_d,
+        correct_option,
+        marks,
+        explanation
+      FROM questions
+      WHERE quiz_id = ?
+      ORDER BY id ASC
+      `,
+      [id]
+    );
 
+      return res.status(200).json({
       success: true,
-
-      quiz: quiz[0],
-
+      quiz: {
+        ...quizRows[0],
+        questions,
+      },
     });
 
-  } catch (error) {
-
+    } catch (error) {
     console.error(error);
 
-    return res.status(500).json({
-
+      return res.status(500).json({
       success: false,
-
-      message: "Internal Server Error",
-
+       message: "Internal Server Error",
     });
-
-  }
-
-};
-
+    }
+  };
 /*
 =================================
 UPDATE QUIZ
