@@ -259,3 +259,470 @@ exports.getStudentClassroomQuizzes = async (req, res) => {
 
   }
 };
+
+/*
+=================================
+START QUIZ
+POST /api/student/start-quiz/:quizId
+=================================
+*/
+
+exports.startQuiz = async (req, res) => {
+  try {
+
+    const { quizId } = req.params;
+
+    // Check quiz exists
+    const [quizRows] = await db.query(
+      `
+      SELECT
+        id,
+        classroom_id,
+        title,
+        time_limit,
+        total_marks
+      FROM quizzes
+      WHERE id = ?
+      `,
+      [quizId]
+    );
+
+    if (quizRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Quiz not found",
+      });
+    }
+
+    const quiz = quizRows[0];
+
+    // Verify student belongs to classroom
+    const [membership] = await db.query(
+      `
+      SELECT id
+      FROM classroom_students
+      WHERE classroom_id = ?
+      AND student_id = ?
+      `,
+      [
+        quiz.classroom_id,
+        req.user.id,
+      ]
+    );
+
+    if (membership.length === 0) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not enrolled in this classroom",
+      });
+    }
+
+    // Already submitted?
+    const [submitted] = await db.query(
+      `
+      SELECT id
+      FROM quiz_attempts
+      WHERE quiz_id = ?
+      AND student_id = ?
+      AND status='SUBMITTED'
+      `,
+      [
+        quizId,
+        req.user.id,
+      ]
+    );
+
+    if (submitted.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Quiz already submitted",
+      });
+    }
+
+    // Resume unfinished attempt
+    const [existing] = await db.query(
+      `
+      SELECT id
+      FROM quiz_attempts
+      WHERE quiz_id = ?
+      AND student_id = ?
+      AND status='IN_PROGRESS'
+      `,
+      [
+        quizId,
+        req.user.id,
+      ]
+    );
+
+    if (existing.length > 0) {
+      return res.status(200).json({
+        success: true,
+        attemptId: existing[0].id,
+        resumed: true,
+      });
+    }
+
+    // Create attempt
+    const [attempt] = await db.query(
+      `
+      INSERT INTO quiz_attempts
+      (
+        quiz_id,
+        student_id,
+        total_marks
+      )
+      VALUES (?, ?, ?)
+      `,
+      [
+        quizId,
+        req.user.id,
+        quiz.total_marks,
+      ]
+    );
+
+    return res.status(201).json({
+      success: true,
+      attemptId: attempt.insertId,
+      resumed: false,
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+
+  }
+};
+
+/*
+=================================
+GET ATTEMPT QUIZ
+GET /api/student/attempt/:attemptId
+=================================
+*/
+
+exports.getAttemptQuiz = async (req, res) => {
+  try {
+
+    const { attemptId } = req.params;
+
+    /*
+    =================================
+    VERIFY ATTEMPT
+    =================================
+    */
+
+    const [attemptRows] = await db.query(
+      `
+      SELECT
+        qa.id,
+        qa.quiz_id,
+        qa.student_id,
+        qa.status,
+        qa.started_at,
+        q.title,
+        q.description,
+        q.time_limit,
+        q.total_marks
+      FROM quiz_attempts qa
+      JOIN quizzes q
+        ON qa.quiz_id = q.id
+      WHERE qa.id = ?
+      `,
+      [attemptId]
+    );
+
+    if (attemptRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Attempt not found",
+      });
+    }
+
+    const attempt = attemptRows[0];
+
+    if (attempt.student_id !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    if (attempt.status === "SUBMITTED") {
+      return res.status(400).json({
+        success: false,
+        message: "Quiz already submitted",
+      });
+    }
+
+    /*
+    =================================
+    GET QUESTIONS
+    =================================
+    */
+
+    const [questions] = await db.query(
+      `
+      SELECT
+        id,
+        question,
+        option_a,
+        option_b,
+        option_c,
+        option_d,
+        marks,
+        explanation
+      FROM questions
+      WHERE quiz_id = ?
+      ORDER BY id ASC
+      `,
+      [attempt.quiz_id]
+    );
+
+    /*
+    =================================
+    REMOVE ANSWERS
+    =================================
+    */
+
+    const formattedQuestions = questions.map((q) => ({
+      id: q.id,
+      question: q.question,
+      option_a: q.option_a,
+      option_b: q.option_b,
+      option_c: q.option_c,
+      option_d: q.option_d,
+      marks: q.marks,
+      explanation: q.explanation,
+    }));
+
+    /*
+    =================================
+    RETURN
+    =================================
+    */
+
+    return res.status(200).json({
+      success: true,
+      attempt: {
+        id: attempt.id,
+        quiz_id: attempt.quiz_id,
+        title: attempt.title,
+        description: attempt.description,
+        time_limit: attempt.time_limit,
+        total_marks: attempt.total_marks,
+        started_at: attempt.started_at,
+      },
+      questions: formattedQuestions,
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+
+  }
+};
+
+/*
+=================================
+SUBMIT QUIZ
+POST /api/student/submit/:attemptId
+=================================
+*/
+
+exports.submitQuiz = async (req, res) => {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const { attemptId } = req.params;
+    const { answers } = req.body;
+
+    if (!Array.isArray(answers)) {
+      await connection.rollback();
+
+      return res.status(400).json({
+        success: false,
+        message: "Answers are required",
+      });
+    }
+
+    /*
+    =================================
+    VERIFY ATTEMPT
+    =================================
+    */
+
+    const [attemptRows] = await connection.query(
+      `
+      SELECT
+        id,
+        quiz_id,
+        student_id,
+        status,
+        total_marks
+      FROM quiz_attempts
+      WHERE id = ?
+      `,
+      [attemptId]
+    );
+
+    if (attemptRows.length === 0) {
+      await connection.rollback();
+
+      return res.status(404).json({
+        success: false,
+        message: "Attempt not found",
+      });
+    }
+
+    const attempt = attemptRows[0];
+
+    if (attempt.student_id !== req.user.id) {
+      await connection.rollback();
+
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    if (attempt.status === "SUBMITTED") {
+      await connection.rollback();
+
+      return res.status(400).json({
+        success: false,
+        message: "Quiz already submitted",
+      });
+    }
+
+    /*
+    =================================
+    LOAD QUESTIONS
+    =================================
+    */
+
+    const [questions] = await connection.query(
+      `
+      SELECT
+        id,
+        correct_option,
+        marks
+      FROM questions
+      WHERE quiz_id = ?
+      `,
+      [attempt.quiz_id]
+    );
+
+    const questionMap = new Map();
+
+    questions.forEach((question) => {
+      questionMap.set(question.id, question);
+    });
+
+    let score = 0;
+    let correct = 0;
+    let wrong = 0;
+
+    /*
+    =================================
+    SAVE ANSWERS
+    =================================
+    */
+
+    for (const answer of answers) {
+      const question = questionMap.get(answer.question_id);
+
+      if (!question) continue;
+
+      const isCorrect =
+        answer.selected_option === question.correct_option;
+
+      const marksAwarded = isCorrect ? question.marks : 0;
+
+      if (isCorrect) {
+        score += marksAwarded;
+        correct++;
+      } else {
+        wrong++;
+      }
+
+      await connection.query(
+        `
+        INSERT INTO student_answers
+        (
+          attempt_id,
+          question_id,
+          selected_option,
+          is_correct,
+          marks_awarded
+        )
+        VALUES (?, ?, ?, ?, ?)
+        `,
+        [
+          attempt.id,
+          question.id,
+          answer.selected_option || null,
+          isCorrect,
+          marksAwarded,
+        ]
+      );
+    }
+
+    /*
+    =================================
+    UPDATE ATTEMPT
+    =================================
+    */
+
+    await connection.query(
+      `
+      UPDATE quiz_attempts
+      SET
+        score = ?,
+        status = 'SUBMITTED',
+        submitted_at = NOW()
+      WHERE id = ?
+      `,
+      [
+        score,
+        attempt.id,
+      ]
+    );
+
+    await connection.commit();
+
+    return res.status(200).json({
+      success: true,
+      message: "Quiz submitted successfully",
+      score,
+      total_marks: attempt.total_marks,
+      correct,
+      wrong,
+    });
+
+  } catch (error) {
+    await connection.rollback();
+
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+
+  } finally {
+    connection.release();
+  }
+};
+
