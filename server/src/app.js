@@ -37,6 +37,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api/teacher", teacherRoutes);
+app.use("/api/ai", aiRoutes);
 
 /*
 =================================
