@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import AIQuizDialog from "@/components/quiz/AIQuizDialog";
 
 import CreateQuizDialog from "@/components/quiz/CreateQuizDialog";
 
@@ -148,10 +149,20 @@ export default function ClassroomDetailsPage({
           Quizzes
         </h2>
 
+        <div className="flex gap-2">
+
+      <div className="flex gap-2">
         <CreateQuizDialog
-          classroomId={classroomId}
-          onSuccess={loadData}
-        />
+        classroomId={classroomId}
+        onSuccess={loadData}
+        />  
+
+
+    </div>
+
+      <AIQuizDialog classroomId={classroomId} onSuccess={loadData} />
+
+      </div>
 
       </div>
 

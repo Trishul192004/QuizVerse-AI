@@ -28,7 +28,7 @@ async function generateResponse(messages) {
         model: process.env.AI_MODEL,
         messages,
         temperature: 0.7,
-        max_tokens: 1000,
+        max_tokens: 2000,
       },
       {
         headers: {

@@ -462,6 +462,30 @@ exports.saveAIQuiz = async (req, res) => {
 
     const quizId = quizResult.insertId;
 
+function getCorrectOption(q) {
+  const answer = q.answer.trim().toLowerCase();
+
+  const index = q.options.findIndex(
+    (option) =>
+      option.trim().toLowerCase() === answer
+  );
+
+  switch (index) {
+    case 0:
+      return "A";
+    case 1:
+      return "B";
+    case 2:
+      return "C";
+    case 3:
+      return "D";
+    default:
+      throw new Error(
+        `Correct answer "${q.answer}" does not match any option`
+      );
+  }
+}
+
     for (const q of questions) {
       await connection.query(
         `
@@ -486,7 +510,7 @@ exports.saveAIQuiz = async (req, res) => {
           q.options[1],
           q.options[2],
           q.options[3],
-          q.correct_option,
+          getCorrectOption(q),
           q.marks || 1,
           q.explanation || null,
         ]

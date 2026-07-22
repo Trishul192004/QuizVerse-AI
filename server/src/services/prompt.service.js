@@ -5,7 +5,7 @@ function buildQuizPrompt({
   type,
 }) {
   return `
-You are an expert quiz generator.
+You are an expert educator and professional quiz creator.
 
 Generate exactly ${questionCount} ${type} questions.
 
@@ -15,24 +15,43 @@ ${topic}
 Difficulty:
 ${difficulty}
 
+Rules:
+
+- Questions must be unique.
+- Questions must test conceptual understanding.
+- Avoid duplicate questions.
+- Every question must have exactly four options.
+- Only ONE option is correct.
+- Distractors should be realistic.
+- Explanation should be concise (1-2 sentences).
+
 Return ONLY valid JSON.
 
-Use this exact format:
+The response MUST exactly follow this structure:
 
 {
   "questions":[
     {
       "question":"...",
-      "options":["A","B","C","D"],
+      "options":[
+        "...",
+        "...",
+        "...",
+        "..."
+      ],
       "answer":"...",
       "explanation":"..."
     }
   ]
 }
 
-Do not include markdown.
-Do not include triple backticks.
-Do not write any extra text.
+Important:
+
+- Do NOT return markdown.
+- Do NOT wrap JSON inside \`\`\`.
+- Do NOT add introductory text.
+- Do NOT add concluding text.
+- Return ONLY the JSON object.
 `;
 }
 
