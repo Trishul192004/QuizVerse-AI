@@ -1,48 +1,48 @@
-  import api from "./axios";
+import api from "./axios";
 
-  /*
-  ========================================
-  INTERFACES
-  ========================================
-  */
+/*
+========================================
+INTERFACES
+========================================
+*/
 
-  export interface StudentClassroom {
-    id: number;
-    name: string;
-    join_code: string;
-    teacher_name: string;
-    created_at: string;
-  }
+export interface StudentClassroom {
+  id: number;
+  name: string;
+  join_code: string;
+  teacher_name: string;
+  created_at: string;
+}
 
-  export interface JoinClassroomResponse {
-    success: boolean;
-    message: string;
-  }
+export interface JoinClassroomResponse {
+  success: boolean;
+  message: string;
+}
 
-  export interface StudentClassroomsResponse {
-    success: boolean;
-    classrooms: StudentClassroom[];
-  }
+export interface StudentClassroomsResponse {
+  success: boolean;
+  classrooms: StudentClassroom[];
+}
 
-  export interface QuizQuestion {
-    id: number;
-    question: string;
-    option_a: string;
-    option_b: string;
-    option_c: string;
-    option_d: string;
-    marks: number;
-  }
+export interface QuizQuestion {
+  id: number;
+  question: string;
+  option_a: string;
+  option_b: string;
+  option_c: string;
+  option_d: string;
+  marks: number;
+}
 
-  export interface AttemptQuiz {
-    id: number;
-    quiz_id: number;
-    title: string;
-    description: string;
-    status: string;
-    time_limit: number;
-    total_marks: number;
-  }
+export interface AttemptQuiz {
+  id: number;
+  quiz_id: number;
+  title: string;
+  description: string;
+  status: string;
+  time_limit: number;
+  total_marks: number;
+}
 
 export interface AttemptQuizResponse {
   success: boolean;
@@ -50,99 +50,100 @@ export interface AttemptQuizResponse {
   questions: QuizQuestion[];
 }
 
-  /*
-  ========================================
-  JOIN CLASSROOM
-  ========================================
-  */
+/*
+========================================
+JOIN CLASSROOM
+========================================
+*/
 
-  export const joinClassroom = async (
-    join_code: string
-  ): Promise<JoinClassroomResponse> => {
-    const response = await api.post("/student/join-classroom", {
-      join_code,
-    });
+export const joinClassroom = async (
+  join_code: string
+): Promise<JoinClassroomResponse> => {
+  const response = await api.post("/student/join-classroom", {
+    join_code,
+  });
 
-    return response.data;
-  };
+  return response.data;
+};
 
-  /*
-  ========================================
-  GET MY CLASSROOMS
-  ========================================
-  */
+/*
+========================================
+GET MY CLASSROOMS
+========================================
+*/
 
-  export const getStudentClassrooms =
-    async (): Promise<StudentClassroomsResponse> => {
-      const response = await api.get("/student/classrooms");
-      return response.data;
-    };
-
-  /*
-  ========================================
-  GET CLASSROOM QUIZZES
-  ========================================
-  */
-
-  export const getStudentClassroomQuizzes = async (
-    classroomId: number
-  ) => {
-    const response = await api.get(
-      `/student/classrooms/${classroomId}/quizzes`
-    );
+export const getStudentClassrooms =
+  async (): Promise<StudentClassroomsResponse> => {
+    const response = await api.get("/student/classrooms");
 
     return response.data;
   };
 
-  /*
-  ========================================
-  START QUIZ
-  ========================================
-  */
+/*
+========================================
+GET CLASSROOM QUIZZES
+========================================
+*/
 
-  export const startQuiz = async (quizId: number) => {
-    const response = await api.post(
-      `/student/start-quiz/${quizId}`
-    );
+export const getStudentClassroomQuizzes = async (
+  classroomId: number
+) => {
+  const response = await api.get(
+    `/student/classrooms/${classroomId}/quizzes`
+  );
 
-    return response.data;
-  };
+  return response.data;
+};
 
-  /*
-  ========================================
-  GET ATTEMPT QUIZ
-  ========================================
-  */
+/*
+========================================
+START QUIZ ATTEMPT
+========================================
+*/
 
-  export const getAttemptQuiz = async (
-    attemptId: number
-  ): Promise<AttemptQuizResponse> => {
-    const response = await api.get(
-      `/student/attempt/${attemptId}`
-    );
+export const startQuiz = async (quizId: number) => {
+  const response = await api.post(
+    `/student/start-quiz/${quizId}`
+  );
 
-    return response.data;
-  };
+  return response.data;
+};
 
-  /*
-  ========================================
-  SUBMIT QUIZ
-  ========================================
-  */
+/*
+========================================
+GET ATTEMPT QUIZ
+========================================
+*/
 
-  export const submitQuiz = async (
-    attemptId: number,
-    answers: {
-      question_id: number;
-      selected_option: string;
-    }[]
-  ) => {
-    const response = await api.post(
-      `/student/submit/${attemptId}`,
-      {
-        answers,
-      }
-    );
+export const getAttemptQuiz = async (
+  attemptId: number
+): Promise<AttemptQuizResponse> => {
+  const response = await api.get(
+    `/student/attempt/${attemptId}`
+  );
 
-    return response.data;
-  };
+  return response.data;
+};
+
+/*
+========================================
+SUBMIT QUIZ
+========================================
+*/
+
+export const submitQuiz = async (
+  attemptId: number,
+  answers: {
+    question_id: number;
+    selected_option: string;
+  }[]
+) => {
+  const response = await api.post(
+    `/student/submit/${attemptId}`,
+    {
+      answers,
+    }
+  );
+
+  return response.data;
+};

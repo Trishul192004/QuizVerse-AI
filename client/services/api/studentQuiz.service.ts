@@ -1,37 +1,72 @@
 import api from "./axios";
 
-export const getQuizById = async (quizId: number) => {
-  const res = await api.get(`/quiz/${quizId}`);
+/*
+=================================
+GET AVAILABLE QUIZZES
+=================================
+*/
+export const getAvailableQuizzes = async () => {
+  const res = await api.get("/student/quizzes");
   return res.data;
 };
 
+/*
+=================================
+GET QUIZ
+=================================
+*/
+export const getQuizById = async (quizId: number) => {
+  const res = await api.get(`/student/quizzes/${quizId}`);
+  return res.data;
+};
+
+/*
+=================================
+START QUIZ
+=================================
+*/
+export const startQuiz = async (quizId: number) => {
+  const res = await api.post(
+    `/student/quizzes/${quizId}/start`
+  );
+
+  return res.data;
+};
+
+/*
+=================================
+SUBMIT QUIZ
+=================================
+*/
 export const submitQuiz = async (
   quizId: number,
   payload: {
+    attemptId: number;
     answers: {
-      questionId: number;
-      answer: string;
+      question_id: number;
+      selected_option: "A" | "B" | "C" | "D";
     }[];
   }
 ) => {
   const res = await api.post(
-    `/quiz/${quizId}/submit`,
+    `/student/quizzes/${quizId}/submit`,
     payload
   );
 
   return res.data;
 };
 
-export const getQuizResult = async (quizId: number) => {
+/*
+=================================
+RESULT
+=================================
+*/
+export const getQuizResult = async (
+  attemptId: number
+) => {
   const res = await api.get(
-    `/quiz/${quizId}/result`
+    `/student/attempt/${attemptId}/result`
   );
 
   return res.data;
-};
-
-export const getAvailableQuizzes = async () => {
-  const res = await api.get("/quiz/student");
-
-  return res.data;
-};
+  };

@@ -16,7 +16,7 @@ interface Props {
   totalQuestions: number;
   onSelectAnswer: (
     questionId: number,
-    answer: string
+    answer: "A" | "B" | "C" | "D"
   ) => void;
 }
 
@@ -41,34 +41,43 @@ export default function QuestionCard({
         </div>
 
         <div className="space-y-4">
-          {question.options.map((option, index) => (
-            <label
-              key={index}
-              className={`flex items-center gap-4 rounded-lg border p-4 cursor-pointer transition-all ${
-                selectedAnswer === option
-                  ? "border-primary bg-primary/10"
-                  : "hover:bg-muted"
-              }`}
-            >
-              <input
-                type="radio"
-                name={`question-${question.id}`}
-                checked={selectedAnswer === option}
-                onChange={() =>
-                  onSelectAnswer(question.id, option)
-                }
-                className="h-4 w-4"
-              />
+          {question.options.map((option, index) => {
+            const optionLetter = String.fromCharCode(
+              65 + index
+            ) as "A" | "B" | "C" | "D";
 
-              <div>
-                <Label className="font-medium cursor-pointer">
-                  {String.fromCharCode(65 + index)}.
-                </Label>
+            return (
+              <label
+                key={index}
+                className={`flex items-center gap-4 rounded-lg border p-4 cursor-pointer transition-all ${
+                  selectedAnswer === optionLetter
+                    ? "border-primary bg-primary/10"
+                    : "hover:bg-muted"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name={`question-${question.id}`}
+                  checked={selectedAnswer === optionLetter}
+                  onChange={() =>
+                    onSelectAnswer(
+                      question.id,
+                      optionLetter
+                    )
+                  }
+                  className="h-4 w-4"
+                />
 
-                <p>{option}</p>
-              </div>
-            </label>
-          ))}
+                <div>
+                  <Label className="font-medium cursor-pointer">
+                    {optionLetter}.
+                  </Label>
+
+                  <p>{option}</p>
+                </div>
+              </label>
+            );
+          })}
         </div>
       </CardContent>
     </Card>

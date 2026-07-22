@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import {
   getQuizById,
+  startQuiz,
   submitQuiz,
 } from "@/services/api/studentQuiz.service";
 
@@ -54,6 +55,8 @@ export default function StudentQuiz({
 
   const [result, setResult] =
     useState<any>(null);
+    const [attemptId, setAttemptId] =
+    useState<number | null>(null);
       useEffect(() => {
     loadQuiz();
   }, []);
@@ -62,9 +65,13 @@ export default function StudentQuiz({
     try {
       setLoading(true);
 
-      const res = await getQuizById(quizId);
+    const quizRes = await getQuizById(quizId);
 
-      setQuiz(res.data);
+    setQuiz(quizRes.quiz);
+
+     const startRes = await startQuiz(quizId);
+
+    setAttemptId(startRes.attemptId);
     } catch (err: any) {
       console.error(err);
 
@@ -114,20 +121,25 @@ export default function StudentQuiz({
     try {
       setLoading(true);
 
-      const payload = {
-        answers: quiz.questions.map((q) => ({
-          questionId: q.id,
-          answer: answers[q.id] ?? "",
-        })),
-      };
+const payload = {
+  attemptId,
+  answers: quiz.questions.map((q) => ({
+    question_id: q.id,
+    selected_option:
+      (answers[q.id] as
+        | "A"
+        | "B"
+        | "C"
+        | "D") ?? null,
+  })),
+};
 
       const res = await submitQuiz(
         quiz.id,
         payload
       );
 
-      setResult(res.data);
-
+      setResult(res.result);
       setSubmitted(true);
 
       toast.success("Quiz submitted successfully");

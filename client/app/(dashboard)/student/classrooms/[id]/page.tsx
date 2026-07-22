@@ -59,26 +59,35 @@ export default function StudentClassroomDetailPage() {
     }
   }, [classroomId]);
 
-  const handleStartQuiz = async (quizId: number) => {
-    try {
-      setStartingQuizId(quizId);
+const handleStartQuiz = async (quizId: number) => {
+  try {
+    setStartingQuizId(quizId);
 
-      const response = await startQuiz(quizId);
+    const response = await startQuiz(quizId);
 
-      toast.success("Quiz started!");
+    toast.success("Quiz started!");
 
-      router.push(`/student/attempt/${response.attemptId}`);
-    } catch (error: any) {
-      console.error(error);
+    router.push(`/student/attempt/${response.attemptId}`);
+  } catch (error: any) {
 
-      toast.error(
-        error?.response?.data?.message ??
-          "Failed to start quiz."
-      );
-    } finally {
-      setStartingQuizId(null);
+    if (
+      error?.response?.status === 400 &&
+      error?.response?.data?.message ===
+        "You have already submitted this quiz."
+    ) {
+      toast.info("You have already submitted this quiz.");
+      return;
     }
-  };
+
+    toast.error(
+      error?.response?.data?.message ??
+      "Failed to start quiz."
+    );
+
+  } finally {
+    setStartingQuizId(null);
+  }
+};
 
   if (loading) {
     return (
