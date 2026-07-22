@@ -16,7 +16,7 @@ const quizRoutes = require("./routes/quiz.routes");
 const questionRoutes = require("./routes/question.routes");
 const studentRoutes = require("./routes/student.routes");
 const aiRoutes = require("./routes/ai.routes");
-
+const studentQuizRoutes = require("./routes/studentQuiz.routes");
 const app = express();
 
 /*
@@ -38,6 +38,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api/teacher", teacherRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/student", studentQuizRoutes);
 
 /*
 =================================
