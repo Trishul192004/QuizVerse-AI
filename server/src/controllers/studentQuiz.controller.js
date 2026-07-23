@@ -400,6 +400,26 @@ exports.submitQuiz = async (req, res) => {
       ]
     );
 
+
+    const earnedXP = totalScore * 10;
+const earnedCoins = totalScore * 2;
+
+console.log("Student:", studentId);
+console.log("Score:", totalScore);
+console.log("XP:", earnedXP);
+console.log("Coins:", earnedCoins);
+
+await connection.query(
+  `
+  UPDATE users
+  SET
+    xp = xp + ?,
+    coins = coins + ?
+  WHERE id = ?
+  `,
+  [earnedXP, earnedCoins, studentId]
+);
+
     await connection.commit();
 
     return res.status(200).json({

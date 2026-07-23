@@ -7,9 +7,16 @@ POST /api/student/join-classroom
 =================================
 */
 
-exports.joinClassroom = async (req, res) => {
-  try {
+ 
 
+/*
+=================================
+START QUIZ
+POST /api/student/start-quiz/:quizId
+=================================
+*/
+exports.joinClassroom = async (req, res) => {
+    try {
     const { join_code } = req.body;
 
     if (!join_code) {
@@ -19,12 +26,7 @@ exports.joinClassroom = async (req, res) => {
       });
     }
 
-    /*
-    =================================
-    FIND CLASSROOM
-    =================================
-    */
-
+    // Find classroom
     const [classrooms] = await db.query(
       `
       SELECT
@@ -46,12 +48,7 @@ exports.joinClassroom = async (req, res) => {
 
     const classroom = classrooms[0];
 
-    /*
-    =================================
-    CHECK ALREADY JOINED
-    =================================
-    */
-
+    // Already joined?
     const [existing] = await db.query(
       `
       SELECT id
@@ -72,12 +69,7 @@ exports.joinClassroom = async (req, res) => {
       });
     }
 
-    /*
-    =================================
-    JOIN CLASSROOM
-    =================================
-    */
-
+    // Join classroom
     await db.query(
       `
       INSERT INTO classroom_students
@@ -109,15 +101,7 @@ exports.joinClassroom = async (req, res) => {
     });
 
   }
-};
-
-/*
-=================================
-GET STUDENT CLASSROOMS
-GET /api/student/classrooms
-=================================
-*/
-
+  };
 exports.getStudentClassrooms = async (req, res) => {
   try {
 
@@ -155,26 +139,13 @@ exports.getStudentClassrooms = async (req, res) => {
     });
 
   }
-};
-
-/*
-=================================
-GET QUIZZES OF A CLASSROOM
-GET /api/student/classrooms/:classroomId/quizzes
-=================================
-*/
-
+  };
 exports.getStudentClassroomQuizzes = async (req, res) => {
   try {
 
     const { classroomId } = req.params;
 
-    /*
-    =================================
-    VERIFY STUDENT BELONGS TO CLASSROOM
-    =================================
-    */
-
+    // Verify student belongs to classroom
     const [membership] = await db.query(
       `
       SELECT id
@@ -195,12 +166,7 @@ exports.getStudentClassroomQuizzes = async (req, res) => {
       });
     }
 
-    /*
-    =================================
-    GET CLASSROOM DETAILS
-    =================================
-    */
-
+    // Classroom details
     const [classrooms] = await db.query(
       `
       SELECT
@@ -222,18 +188,15 @@ exports.getStudentClassroomQuizzes = async (req, res) => {
       });
     }
 
-    /*
-    =================================
-    GET QUIZZES
-    =================================
-    */
-
+    // Quiz list
     const [quizzes] = await db.query(
       `
       SELECT
         id,
         title,
         description,
+        total_marks,
+        time_limit,
         created_at
       FROM quizzes
       WHERE classroom_id = ?
@@ -258,15 +221,7 @@ exports.getStudentClassroomQuizzes = async (req, res) => {
     });
 
   }
-};
-
-/*
-=================================
-START QUIZ
-POST /api/student/start-quiz/:quizId
-=================================
-*/
-
+  };
 exports.startQuiz = async (req, res) => {
   try {
 
@@ -310,7 +265,7 @@ exports.startQuiz = async (req, res) => {
       ]
     );
 
-    if (membership.length === 0) {
+    if (membership.length === 0) { 
       return res.status(403).json({
         success: false,
         message: "You are not enrolled in this classroom",
@@ -699,7 +654,41 @@ exports.submitQuiz = async (req, res) => {
         attempt.id,
       ]
     );
+  
+    /*
+=================================
+AWARD XP & COINS
+=================================
+*/
+/*
+=================================
+AWARD XP & COINS
+=================================
+*/
 
+const earnedXP = score * 10;
+const earnedCoins = score * 2;
+
+const [updateResult] = await connection.query(
+  `
+  UPDATE users
+  SET
+    xp = xp + ?,
+    coins = coins + ?
+  WHERE id = ?
+  `,
+  [
+    earnedXP,
+    earnedCoins,
+    attempt.student_id,
+  ]
+);
+
+console.log("Student ID:", attempt.student_id);
+console.log("Score:", score);
+console.log("XP Earned:", earnedXP);
+console.log("Coins Earned:", earnedCoins);
+console.log("Update Result:", updateResult);
     await connection.commit();
 
     return res.status(200).json({
