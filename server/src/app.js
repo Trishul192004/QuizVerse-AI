@@ -1,7 +1,8 @@
 const express = require("express");
 require("dotenv").config();
 const cors = require("cors");
-const teacherRoutes = require("./routes/teacher.routes");
+
+const app = express();
 
 /*
 =================================
@@ -15,9 +16,10 @@ const classroomRoutes = require("./routes/classroom.routes");
 const quizRoutes = require("./routes/quiz.routes");
 const questionRoutes = require("./routes/question.routes");
 const studentRoutes = require("./routes/student.routes");
+const teacherRoutes = require("./routes/teacher.routes");
 const aiRoutes = require("./routes/ai.routes");
 const studentQuizRoutes = require("./routes/studentQuiz.routes");
-const app = express();
+const battleRoutes = require("./routes/battle.routes");
 
 /*
 =================================
@@ -36,27 +38,6 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/api/teacher", teacherRoutes);
-app.use("/api/ai", aiRoutes);
-app.use("/api/student", studentQuizRoutes);
-
-/*
-=================================
-DEBUG ROUTE
-=================================
-*/
-
-  app.post("/debug", (req, res) => {
-  console.log("\n========= DEBUG =========");
-    console.log(req.headers);
-    console.log(req.body);
-  console.log("=========================\n");
-
-  res.json({
-    success: true,
-    body: req.body,
-  });
-  });
 
 /*
 =================================
@@ -73,6 +54,22 @@ app.get("/", (req, res) => {
 
 /*
 =================================
+DEBUG ROUTE
+=================================
+*/
+
+app.post("/debug", (req, res) => {
+  console.log(req.headers);
+  console.log(req.body);
+
+  res.json({
+    success: true,
+    body: req.body,
+  });
+});
+
+/*
+=================================
 API ROUTES
 =================================
 */
@@ -83,19 +80,22 @@ app.use("/api/classrooms", classroomRoutes);
 app.use("/api/quizzes", quizRoutes);
 app.use("/api/questions", questionRoutes);
 app.use("/api/student", studentRoutes);
+app.use("/api/teacher", teacherRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/student", studentQuizRoutes);
+app.use("/api/battle", battleRoutes);
 
 /*
 =================================
-404 HANDLER
+404
 =================================
 */
 
-  app.use((req, res) => {
+app.use((req, res) => {
   res.status(404).json({
     success: false,
     message: "Route Not Found",
   });
-  });
+});
 
 module.exports = app;

@@ -147,3 +147,11 @@ export const submitQuiz = async (
 
   return response.data;
 };
+
+export const getLeaderboard = async () => {
+  const response = await api.get("/student/leaderboard");
+
+  return response.data;
+};
+
+ 
