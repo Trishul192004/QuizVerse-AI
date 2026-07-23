@@ -26,8 +26,13 @@ const createQuiz = async (req, res) => {
     console.log(req.body);
   try {
     // Generate quiz using AI
-    const quiz = await generateQuiz(req.body);
-
+const quiz = await generateQuiz({
+  topic: req.body.topic,
+  difficulty: req.body.difficulty,
+  number_of_questions: req.body.questionCount,
+  timer: req.body.time_limit,
+  mode: "classroom",
+});
     // Save to database
     const quizId = await saveQuiz({
       classroom_id: req.body.classroom_id,
@@ -57,8 +62,13 @@ const createQuiz = async (req, res) => {
 };
 const generateQuizPreview = async (req, res) => {
   try {
-    const quiz = await generateQuiz(req.body);
-
+const quiz = await generateQuiz({
+  topic: req.body.topic,
+  difficulty: req.body.difficulty,
+  number_of_questions: req.body.questionCount,
+  timer: req.body.time_limit,
+  mode: "classroom",
+});
     return res.json({
       success: true,
       data: quiz,

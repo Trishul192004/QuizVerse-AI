@@ -1,13 +1,31 @@
 function buildQuizPrompt({
   topic,
-  difficulty,
-  questionCount,
-  type,
+  difficulty = "Medium",
+  number_of_questions = 10,
+  timer = 30,
+  mode = "classroom",
 }) {
+  const modeInstructions =
+    mode === "battle"
+      ? `
+Battle Mode Rules:
+- Questions should be short and easy to read.
+- Players have only ${timer} seconds per question.
+- Avoid long paragraphs.
+- Focus on speed and accuracy.
+- Keep options concise.
+`
+      : `
+Classroom Mode Rules:
+- Questions can be slightly descriptive.
+- Focus on conceptual understanding.
+- Suitable for assignments and classroom assessments.
+`;
+
   return `
 You are an expert educator and professional quiz creator.
 
-Generate exactly ${questionCount} ${type} questions.
+Generate exactly ${number_of_questions} multiple-choice questions.
 
 Topic:
 ${topic}
@@ -15,7 +33,9 @@ ${topic}
 Difficulty:
 ${difficulty}
 
-Rules:
+${modeInstructions}
+
+General Rules:
 
 - Questions must be unique.
 - Questions must test conceptual understanding.

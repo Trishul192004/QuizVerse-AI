@@ -538,3 +538,22 @@ function getCorrectOption(q) {
     connection.release();
   }
 };
+exports.getTeacherQuizzes = async (req, res) => {
+    try {
+
+        const quizzes = await quizService.getTeacherQuizzes(req.user.id);
+
+        res.json({
+            success: true,
+            quizzes
+        });
+
+    } catch (err) {
+
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+
+    }
+};

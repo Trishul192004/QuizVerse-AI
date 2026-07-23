@@ -84,6 +84,24 @@ const joinBattle = async (studentId, roomCode) => {
   }
 
   const room = rooms[0];
+  const [existing] = await db.query(
+`
+SELECT id
+FROM battle_answers
+WHERE room_id = ?
+AND student_id = ?
+AND question_id = ?
+`,
+[
+room.id,
+studentId,
+questionId
+]
+);
+
+if(existing.length>0){
+    throw new Error("Answer already submitted");
+}
 
   if (room.status !== "waiting") {
     throw new Error("Battle already started");
@@ -93,15 +111,7 @@ const joinBattle = async (studentId, roomCode) => {
     throw new Error("Room is full");
   }
 
-  const [existing] = await db.query(
-    `
-    SELECT id
-    FROM battle_players
-    WHERE room_id = ?
-    AND student_id = ?
-    `,
-    [room.id, studentId]
-  );
+
 
   if (existing.length > 0) {
     throw new Error("Already joined");
@@ -372,12 +382,28 @@ const submitBattleAnswer = async (studentId, data) => {
             ]
         );
     }
+    if(isCorrect){
+
+await db.query(
+`
+UPDATE users
+SET
+xp=xp+10,
+coins=coins+5
+WHERE id=?
+`,
+[studentId]
+);
+
+}
+
 
     return {
         correct: isCorrect,
         score
     };
 };
+
 
 const getBattleLeaderboard = async (roomCode) => {
 

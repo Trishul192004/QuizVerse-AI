@@ -20,6 +20,7 @@ const teacherRoutes = require("./routes/teacher.routes");
 const aiRoutes = require("./routes/ai.routes");
 const studentQuizRoutes = require("./routes/studentQuiz.routes");
 const battleRoutes = require("./routes/battle.routes");
+const battleAIRoutes=require("./routes/battleAI.routes");
 
 /*
 =================================
@@ -38,6 +39,10 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(
+"/api/battle-ai",
+battleAIRoutes
+);
 
 /*
 =================================

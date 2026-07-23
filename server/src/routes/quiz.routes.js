@@ -17,6 +17,7 @@ const {
   updateQuiz,
   deleteQuiz,
   saveAIQuiz,
+  getTeacherQuizzes
 } = require("../controllers/quiz.controller");
 
 /*
@@ -69,6 +70,13 @@ router.get(
   verifyToken,
   authorizeRoles("teacher"),
   getQuizById
+);
+
+router.get(
+  "/teacher/all",
+  verifyToken,
+  authorizeRoles("teacher"),
+  getTeacherQuizzes
 );
 
 /*
