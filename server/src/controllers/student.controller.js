@@ -714,4 +714,34 @@ console.log("Update Result:", updateResult);
     connection.release();
   }
 };
+exports.getLeaderboard = async (req, res) => {
+  try {
+    const [leaderboard] = await db.query(`
+      SELECT
+        ROW_NUMBER() OVER (
+          ORDER BY xp DESC, coins DESC
+        ) AS user_rank,
+        id,
+        username,
+        avatar_url,
+        xp,
+        coins
+      FROM users
+      WHERE role = 'student'
+      ORDER BY xp DESC, coins DESC
+    `);
 
+    return res.status(200).json({
+      success: true,
+      leaderboard,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};

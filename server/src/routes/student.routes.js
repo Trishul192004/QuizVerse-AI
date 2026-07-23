@@ -44,6 +44,12 @@ router.get(
   studentController.getStudentClassroomQuizzes
 );
 
+router.get(
+  "/leaderboard",
+  verifyToken,
+  authorizeRoles("student"),
+  studentController.getLeaderboard
+);
 /*
 =================================
 START QUIZ
