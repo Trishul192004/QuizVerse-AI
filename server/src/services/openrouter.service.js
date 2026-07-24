@@ -23,25 +23,33 @@ async function generateResponse(messages) {
     console.log("MODEL:", process.env.AI_MODEL);
 
     const response = await axios.post(
-      BASE_URL,
-      {
-        model: process.env.AI_MODEL,
-        messages,
-        temperature: 0.7,
-        max_tokens: 2000,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer": "http://localhost:5000",
-          "X-Title": "QuizVerse AI",
-        },
-      }
-    );
+  BASE_URL,
+  {
+    model: process.env.AI_MODEL,
+    messages,
+    temperature: 0.7,
+    max_tokens: 2000,
+  },
+  {
+    timeout: 120000,
+    headers: {
+      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "http://localhost:5000",
+      "X-Title": "QuizVerse AI",
+    },
+  }
+);
 
-    return response.data.choices[0].message.content;
-  } catch (error) {
+const content = response?.data?.choices?.[0]?.message?.content;
+
+if (!content) {
+  throw new Error("OpenRouter returned an empty response.");
+}
+
+return content;  }
+
+catch (error) {
     console.error("\n========== OPENROUTER ERROR ==========");
 
     if (error.response) {

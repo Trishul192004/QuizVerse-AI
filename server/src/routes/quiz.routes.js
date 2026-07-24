@@ -17,19 +17,19 @@ const {
   updateQuiz,
   deleteQuiz,
   saveAIQuiz,
-  getTeacherQuizzes
+  getTeacherQuizzes,
 } = require("../controllers/quiz.controller");
 
 /*
 =================================
 SAVE AI GENERATED QUIZ
 POST /api/quizzes/save-ai
+(Both Teacher & Student)
 =================================
 */
 router.post(
   "/save-ai",
   verifyToken,
-  authorizeRoles("teacher"),
   saveAIQuiz
 );
 
@@ -37,6 +37,7 @@ router.post(
 =================================
 CREATE QUIZ
 POST /api/quizzes/create
+(Teacher Only)
 =================================
 */
 router.post(
@@ -50,6 +51,7 @@ router.post(
 =================================
 GET QUIZZES OF A CLASSROOM
 GET /api/quizzes/classroom/:classroomId
+(Teacher Only)
 =================================
 */
 router.get(
@@ -61,17 +63,11 @@ router.get(
 
 /*
 =================================
-GET SINGLE QUIZ
-GET /api/quizzes/:id
+GET ALL TEACHER QUIZZES
+GET /api/quizzes/teacher/all
+(Teacher Only)
 =================================
 */
-router.get(
-  "/:id",
-  verifyToken,
-  authorizeRoles("teacher"),
-  getQuizById
-);
-
 router.get(
   "/teacher/all",
   verifyToken,
@@ -81,8 +77,23 @@ router.get(
 
 /*
 =================================
+GET SINGLE QUIZ
+GET /api/quizzes/:id
+(Teacher Only)
+=================================
+*/
+router.get(
+  "/:id",
+  verifyToken,
+  authorizeRoles("teacher"),
+  getQuizById
+);
+
+/*
+=================================
 UPDATE QUIZ
 PUT /api/quizzes/:id
+(Teacher Only)
 =================================
 */
 router.put(
@@ -96,9 +107,10 @@ router.put(
 =================================
 DELETE QUIZ
 DELETE /api/quizzes/:id
+(Teacher Only)
 =================================
 */
-  router.delete(
+router.delete(
   "/:id",
   verifyToken,
   authorizeRoles("teacher"),

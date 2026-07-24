@@ -1,5 +1,5 @@
 import WelcomeBanner from "@/components/dashboard/WelcomeBanner";
-import BattleArena from "@/components/dashboard/BattleArena";
+import BattleArena from "@/components/battle/BattleArena";
 import StatsGrid from "@/components/dashboard/StatsGrid";
 
 export default function TeacherDashboard() {

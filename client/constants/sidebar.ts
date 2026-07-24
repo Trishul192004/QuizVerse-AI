@@ -1,4 +1,4 @@
-import {
+ import {
   LayoutDashboard,
   GraduationCap,
   BrainCircuit,
@@ -7,11 +7,15 @@ import {
   UserCircle,
   Settings,
   ShieldCheck,
+  Swords,
 } from "lucide-react";
 
 import { SidebarSection } from "@/types/sidebar";
 
 export const sidebarItems: SidebarSection[] = [
+  // ==========================
+  // Teacher
+  // ==========================
   {
     role: "teacher",
 
@@ -32,6 +36,11 @@ export const sidebarItems: SidebarSection[] = [
         icon: BrainCircuit,
       },
       {
+        title: "Battle Arena",
+        href: "/battle",
+        icon: Swords,
+      },
+      {
         title: "Leaderboard",
         href: "/leaderboard",
         icon: Trophy,
@@ -44,6 +53,9 @@ export const sidebarItems: SidebarSection[] = [
     ],
   },
 
+  // ==========================
+  // Student
+  // ==========================
   {
     role: "student",
 
@@ -64,9 +76,9 @@ export const sidebarItems: SidebarSection[] = [
         icon: Users,
       },
       {
-        title: "Friends",
-        href: "/friends",
-        icon: Users,
+        title: "Battle Arena",
+        href: "/battle",
+        icon: Swords,
       },
       {
         title: "Leaderboard",
@@ -81,6 +93,9 @@ export const sidebarItems: SidebarSection[] = [
     ],
   },
 
+  // ==========================
+  // Admin
+  // ==========================
   {
     role: "admin",
 

@@ -1,12 +1,12 @@
-  const { generateResponse } = require("./openrouter.service");
-  const { buildQuizPrompt } = require("./prompt.service");
+const { generateResponse } = require("./openrouter.service");
+const { buildQuizPrompt } = require("./prompt.service");
 
 async function generateText(prompt) {
   const messages = [
     {
       role: "system",
       content:
-        "You are QuizVerse AI, an intelligent quiz assistant.",
+        "You are QuizVerse AI. You generate quizzes and ALWAYS return valid JSON only.",
     },
     {
       role: "user",
@@ -39,10 +39,33 @@ async function generateQuiz({
   console.log("===========================\n");
 
   try {
+    // Already valid JSON
     return JSON.parse(response);
   } catch (err) {
-    console.error("Invalid AI Response:", response);
-    throw new Error("AI returned invalid JSON.");
+    console.warn("Response is not pure JSON. Trying to extract JSON...");
+
+    try {
+      const start = response.indexOf("{");
+      const end = response.lastIndexOf("}");
+
+      if (start === -1 || end === -1 || end <= start) {
+        throw new Error("No JSON object found.");
+      }
+
+      const jsonString = response.substring(start, end + 1);
+
+      console.log("\n===== EXTRACTED JSON =====");
+      console.log(jsonString);
+      console.log("==========================\n");
+
+      return JSON.parse(jsonString);
+    } catch (parseError) {
+      console.error("\n========== INVALID AI RESPONSE ==========");
+      console.error(response);
+      console.error("=========================================\n");
+
+      throw new Error("AI returned invalid JSON.");
+    }
   }
 }
 

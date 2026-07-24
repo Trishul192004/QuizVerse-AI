@@ -137,6 +137,17 @@ const login = async (req, res) => {
 
     const user = users[0];
 
+    console.log("========== LOGIN ==========");
+    console.log("Login Email:", email);
+    console.log("DB User:", {
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    role: user.role,
+    });
+    console.log("===========================");
+
+
     const isMatch =
       await comparePassword(
         password,

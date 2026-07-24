@@ -38,7 +38,7 @@ const generateRefreshToken = (user) => {
   console.log("Generating Refresh Token");
   console.log("REFRESH_SECRET:", process.env.REFRESH_SECRET ? "Loaded ✅" : "Missing ❌");
   console.log("REFRESH_EXPIRES_IN:", process.env.REFRESH_EXPIRES_IN);
-
+ console.log("Creating JWT for user:", user.id, user.email);
   return jwt.sign(
     {
       id: user.id,

@@ -30,18 +30,13 @@ export async function generateQuizPreview(
 
   return res.data;
 }
-
-export async function saveAIQuiz(data: {
-  classroom_id: number;
+  export async function saveAIQuiz(data: {
+  classroom_id?: number;
   title: string;
   description: string;
   time_limit: number;
   questions: AIQuestion[];
 }) {
-  const res = await axios.post(
-    "/quizzes/save-ai",
-    data
-  );
-
+  const res = await axios.post("/quizzes/save-ai", data);
   return res.data;
 }

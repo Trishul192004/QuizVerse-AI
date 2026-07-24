@@ -44,14 +44,14 @@ router.post(
   verifyToken,
   battleController.joinBattle
 );
-router.post(
-  "/start",
-  verifyToken,
-  battleController.startBattle
-);
+
 router.post(
     "/submit-answer",
     verifyToken,
     battleController.submitBattleAnswer
 );
+router.post("/start", verifyToken, (req, res, next) => {
+  console.log("START ROUTE HIT");
+  next();
+}, battleController.startBattle);
 module.exports = router;

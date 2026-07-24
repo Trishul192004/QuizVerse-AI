@@ -105,23 +105,16 @@ exports.joinBattle = async (req, res) => {
 exports.startBattle = async (req, res) => {
   try {
     const { roomCode } = req.body;
-
-    if (!roomCode) {
-      return res.status(400).json({
-        success: false,
-        message: "Room code is required",
-      });
-    }
-
-    const room = await battleService.startBattle(
+    console.log("Body:", req.body);
+    console.log("User:", req.user);
+    const result = await battleService.startBattle(
       req.user.id,
       roomCode
     );
 
     return res.json({
       success: true,
-      message: "Battle started successfully",
-      room,
+      room: result,
     });
 
   } catch (err) {
@@ -189,11 +182,13 @@ exports.getBattleLeaderboard = async (req, res) => {
         });
 
     } catch (err) {
-        console.error(err);
+  console.error("START BATTLE ERROR:");
+  console.error(err);
+  console.error(err.message);
 
-        return res.status(400).json({
-            success: false,
-            message: err.message
-        });
-    }
+  return res.status(400).json({
+    success: false,
+    message: err.message,
+  });
+}
 };

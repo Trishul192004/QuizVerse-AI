@@ -56,6 +56,11 @@ export default function LoginForm() {
 
       const response = await login(data);
 
+      console.log("LOGIN RESPONSE");
+      console.log(response);
+      console.log("Access Token:", response.accessToken);
+      console.log("User:", response.user);
+
       authLogin(
         response.accessToken,
         response.refreshToken,

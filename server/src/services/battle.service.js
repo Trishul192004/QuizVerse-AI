@@ -72,7 +72,7 @@ const createBattle = async (hostId, quizId, maxPlayers) => {
   };
 };
 
-const joinBattle = async (studentId, roomCode) => {
+const joinBattle = async (userId, roomCode) => {
 
   const [rooms] = await db.query(
     "SELECT * FROM battle_rooms WHERE room_code = ?",
@@ -87,21 +87,15 @@ const joinBattle = async (studentId, roomCode) => {
   const [existing] = await db.query(
 `
 SELECT id
-FROM battle_answers
+FROM battle_players
 WHERE room_id = ?
 AND student_id = ?
-AND question_id = ?
-`,
+  `,
 [
 room.id,
-studentId,
-questionId
-]
-);
-
-if(existing.length>0){
-    throw new Error("Answer already submitted");
-}
+userId,
+  ]
+  );
 
   if (room.status !== "waiting") {
     throw new Error("Battle already started");
@@ -128,7 +122,7 @@ if(existing.length>0){
     )
     VALUES (?, ?, 0, 0)
     `,
-    [room.id, studentId]
+    [room.id, userId]
   );
 
   await db.query(
@@ -184,37 +178,43 @@ const getBattleRoom = async (roomCode) => {
     createdAt: room.created_at,
   };
 };
-
 const getBattlePlayers = async (roomCode) => {
 
-  const [rooms] = await db.query(
-    "SELECT id FROM battle_rooms WHERE room_code = ?",
-    [roomCode]
-  );
+    console.log("roomCode:", roomCode);
 
-  if (rooms.length === 0)
-    throw new Error("Room not found");
+    const [rooms] = await db.query(
+        "SELECT id FROM battle_rooms WHERE room_code = ?",
+        [roomCode]
+    );
 
-  const roomId = rooms[0].id;
+    console.log("rooms:", rooms);
 
-  const [players] = await db.query(
-    `
-    SELECT
-      u.id,
-      u.username,
-      bp.score
-    FROM battle_players bp
-    JOIN users u
-      ON bp.student_id = u.id
-    WHERE bp.room_id = ?
-    ORDER BY bp.score DESC
-    `,
-    [roomId]
-  );
+    if (rooms.length === 0)
+        throw new Error("Room not found");
 
-  return players;
-};
+    const roomId = rooms[0].id;
 
+    console.log("roomId:", roomId);
+
+    const [players] = await db.query(
+        `
+        SELECT
+            u.id,
+            u.username,
+            bp.score
+        FROM battle_players bp
+        JOIN users u
+            ON bp.student_id = u.id
+        WHERE bp.room_id = ?
+        ORDER BY bp.score DESC
+        `,
+        [roomId]
+    );
+
+    console.log("players:", players);
+
+    return players;
+  };
 const startBattle = async (hostId, roomCode) => {
 
   // Find room
@@ -305,7 +305,7 @@ const getBattleQuestions = async (roomCode) => {
 
     return questions;
 };
-const submitBattleAnswer = async (studentId, data) => {
+const submitBattleAnswer = async (userId, data) => {
 
     const {
         roomCode,
@@ -359,7 +359,7 @@ const submitBattleAnswer = async (studentId, data) => {
     `,
     [
         room.id,
-        studentId,
+        userId,
         questionId,
         selectedOption,
         isCorrect,
@@ -378,7 +378,7 @@ const submitBattleAnswer = async (studentId, data) => {
             [
                 score,
                 room.id,
-                studentId
+                userId
             ]
         );
     }
@@ -392,7 +392,7 @@ xp=xp+10,
 coins=coins+5
 WHERE id=?
 `,
-[studentId]
+[userId]
 );
 
 }

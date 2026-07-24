@@ -9,23 +9,23 @@ function buildQuizPrompt({
     mode === "battle"
       ? `
 Battle Mode Rules:
-- Questions should be short and easy to read.
-- Players have only ${timer} seconds per question.
-- Avoid long paragraphs.
-- Focus on speed and accuracy.
+- Questions must be short.
+- Each question should be readable within a few seconds.
+- Suitable for ${timer}-second gameplay.
 - Keep options concise.
+- Avoid lengthy explanations.
 `
       : `
 Classroom Mode Rules:
-- Questions can be slightly descriptive.
+- Questions may be slightly descriptive.
 - Focus on conceptual understanding.
-- Suitable for assignments and classroom assessments.
+- Suitable for classroom assessments.
 `;
 
   return `
-You are an expert educator and professional quiz creator.
+You are QuizVerse AI, an expert educator and professional quiz creator.
 
-Generate exactly ${number_of_questions} multiple-choice questions.
+Generate EXACTLY ${number_of_questions} multiple-choice questions.
 
 Topic:
 ${topic}
@@ -35,43 +35,51 @@ ${difficulty}
 
 ${modeInstructions}
 
-General Rules:
+Requirements:
 
-- Questions must be unique.
-- Questions must test conceptual understanding.
-- Avoid duplicate questions.
-- Every question must have exactly four options.
-- Only ONE option is correct.
-- Distractors should be realistic.
-- Explanation should be concise (1-2 sentences).
+- Every question must be unique.
+- Every question must have exactly 4 options.
+- Exactly ONE option must be correct.
+- The answer must exactly match one of the option strings.
+- Explanation should be 1-2 short sentences.
+- Questions should match the requested difficulty.
+- Do not repeat concepts.
+- Do not leave any field empty.
 
-Return ONLY valid JSON.
+Return ONLY a valid JSON object.
 
-The response MUST exactly follow this structure:
+The response MUST follow EXACTLY this schema:
 
 {
-  "questions":[
+  "questions": [
     {
-      "question":"...",
-      "options":[
-        "...",
-        "...",
-        "...",
-        "..."
+      "question": "Question text",
+      "options": [
+        "Option A",
+        "Option B",
+        "Option C",
+        "Option D"
       ],
-      "answer":"...",
-      "explanation":"..."
+      "answer": "Option A",
+      "explanation": "Short explanation."
     }
   ]
 }
 
-Important:
+STRICT RULES:
 
-- Do NOT return markdown.
+- Output ONLY JSON.
+- Do NOT use markdown.
 - Do NOT wrap JSON inside \`\`\`.
-- Do NOT add introductory text.
-- Do NOT add concluding text.
-- Return ONLY the JSON object.
+- Do NOT write "Here is the quiz".
+- Do NOT write notes.
+- Do NOT write explanations outside JSON.
+- Do NOT write "User Safety".
+- Do NOT write anything before the opening {.
+- Do NOT write anything after the closing }.
+- The response MUST begin with {.
+- The response MUST end with }.
+- Ensure the JSON is complete and valid before finishing.
 `;
 }
 

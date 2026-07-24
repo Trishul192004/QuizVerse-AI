@@ -417,18 +417,17 @@ exports.saveAIQuiz = async (req, res) => {
       questions,
     } = req.body;
 
-    if (
-      !classroom_id ||
-      !title ||
-      !time_limit ||
-      !questions ||
-      questions.length === 0
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Missing required fields",
-      });
-    }
+if (
+  !title ||
+  !time_limit ||
+  !questions ||
+  questions.length === 0
+) {
+  return res.status(400).json({
+    success: false,
+    message: "Missing required fields",
+  });
+}
 
     await connection.beginTransaction();
 
@@ -438,27 +437,27 @@ exports.saveAIQuiz = async (req, res) => {
     );
 
     const [quizResult] = await connection.query(
-      `
-      INSERT INTO quizzes
-      (
-        classroom_id,
-        teacher_id,
-        title,
-        description,
-        time_limit,
-        total_marks
-      )
-      VALUES (?, ?, ?, ?, ?, ?)
-      `,
-      [
-        classroom_id,
-        req.user.id,
-        title,
-        description || "",
-        time_limit,
-        totalMarks,
-      ]
-    );
+  `
+  INSERT INTO quizzes
+  (
+    classroom_id,
+    teacher_id,
+    title,
+    description,
+    time_limit,
+    total_marks
+  )
+  VALUES (?, ?, ?, ?, ?, ?)
+  `,
+  [
+    classroom_id || null,
+    req.user.id,
+    title,
+    description || "",
+    time_limit,
+    totalMarks,
+  ]
+);
 
     const quizId = quizResult.insertId;
 
