@@ -130,11 +130,11 @@ exports.getBattleQuestions = async (req, res) => {
     try {
         const { roomCode } = req.params;
 
-        const questions = await battleService.getBattleQuestions(roomCode);
+        const result = await battleService.getBattleQuestions(roomCode);
 
         return res.json({
             success: true,
-            questions
+            ...result
         });
 
     } catch (err) {
@@ -148,6 +148,8 @@ exports.getBattleQuestions = async (req, res) => {
 };
 
 exports.submitBattleAnswer = async (req, res) => {
+  console.log("BODY:", req.body);
+  console.log("USER:", req.user);
     try {
         const result = await battleService.submitBattleAnswer(
             req.user.id,
@@ -178,8 +180,9 @@ exports.getBattleLeaderboard = async (req, res) => {
 
         return res.json({
             success: true,
-            leaderboard: result
-        });
+            status: result.status,
+            leaderboard: result.leaderboard     
+          });
 
     } catch (err) {
   console.error("START BATTLE ERROR:");
