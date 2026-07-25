@@ -20,7 +20,7 @@ const teacherRoutes = require("./routes/teacher.routes");
 const aiRoutes = require("./routes/ai.routes");
 const studentQuizRoutes = require("./routes/studentQuiz.routes");
 const battleRoutes = require("./routes/battle.routes");
-const battleAIRoutes=require("./routes/battleAI.routes");
+const battleAIRoutes = require("./routes/battleAI.routes");
 
 /*
 =================================
@@ -30,7 +30,7 @@ GLOBAL MIDDLEWARE
 
 app.use(
   cors({
-    origin: true,
+    origin: "http://localhost:3000",
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -39,10 +39,6 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(
-"/api/battle-ai",
-battleAIRoutes
-);
 
 /*
 =================================
@@ -89,6 +85,7 @@ app.use("/api/teacher", teacherRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/student", studentQuizRoutes);
 app.use("/api/battle", battleRoutes);
+app.use("/api/battle-ai", battleAIRoutes);
 
 /*
 =================================
