@@ -67,7 +67,7 @@ export default function WaitingRoomPage() {
       setRoom(roomRes.room);
       setPlayers(playerRes.players);
 
-      if (roomRes.room.status === "in_progress") {
+      if (roomRes.room.status === "active") {
         router.push(`/battle/room/${roomCode}`);
       }
 

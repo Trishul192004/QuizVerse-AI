@@ -1,694 +1,279 @@
 const db = require("../config/db");
-  const generateRoomCode = require("../utils/roomCode");
+const generateRoomCode = require("../utils/roomCode");
+const { getManager } = require("../socket");
 
-/* ==========================================================
-   CREATE BATTLE
-========================================================== */
+const MAX_PLAYERS_DEFAULT = 20;
 
 const createBattle = async (hostId, quizId, maxPlayers) => {
-    const [quiz] = await db.query(
-        "SELECT id FROM quizzes WHERE id = ?",
-        [quizId]
-    );
+    const [quiz] = await db.query("SELECT id, time_limit FROM quizzes WHERE id = ?", [quizId]);
+    if (quiz.length === 0) throw new Error("Quiz not found");
 
-    if (quiz.length === 0)
-        throw new Error("Quiz not found");
+    const [questions] = await db.query("SELECT COUNT(*) AS cnt FROM questions WHERE quiz_id = ?", [quizId]);
+    const totalQuestions = questions[0].cnt;
+    const timeLimit = quiz[0].time_limit || 10;
 
     let roomCode;
-
     while (true) {
         roomCode = generateRoomCode();
-
-        const [existing] = await db.query(
-            "SELECT id FROM battle_rooms WHERE room_code = ?",
-            [roomCode]
-        );
-
-        if (existing.length === 0)
-            break;
+        const [existing] = await db.query("SELECT id FROM battle_rooms WHERE room_code = ?", [roomCode]);
+        if (existing.length === 0) break;
     }
 
     const [result] = await db.query(
-        `
-        INSERT INTO battle_rooms
-        (
-            room_code,
-            host_id,
-            quiz_id,
-            max_players,
-            current_players,
-            current_question_index,
-            status
-        )
-        VALUES (?, ?, ?, ?, 1, 0, 'waiting')
-        `,
-        [
-            roomCode,
-            hostId,
-            quizId,
-            maxPlayers
-        ]
+        `INSERT INTO battle_rooms (room_code, host_id, quiz_id, total_questions, time_limit, status)
+         VALUES (?, ?, ?, ?, ?, 'waiting')`,
+        [roomCode, hostId, quizId, totalQuestions, timeLimit]
     );
-
 
     await db.query(
-        `
-        INSERT INTO battle_players
-        (
-            room_id,
-            student_id,
-            score,
-            total_response_time_ms
-        )
-        VALUES (?, ?, 0, 0)
-        `,
-        [
-            result.insertId,
-            hostId
-        ]
+        `INSERT INTO battle_players (room_code, user_id, score, correct_count, wrong_count)
+         VALUES (?, ?, 0, 0, 0)`,
+        [roomCode, hostId]
     );
-console.log("Inserted answer");
+
     return {
         roomId: result.insertId,
         roomCode,
         quizId,
         hostId,
-        maxPlayers,
+        maxPlayers: maxPlayers || MAX_PLAYERS_DEFAULT,
         currentPlayers: 1,
         currentQuestionIndex: 0,
         status: "waiting",
+        createdAt: new Date().toISOString(),
+        startedAt: null,
+        endedAt: null,
     };
 };
-
-/* ==========================================================
-   JOIN BATTLE
-========================================================== */
 
 const joinBattle = async (userId, roomCode) => {
-
-    const [rooms] = await db.query(
-        "SELECT * FROM battle_rooms WHERE room_code = ?",
-        [roomCode]
-    );
-
-    if (rooms.length === 0)
-        throw new Error("Room not found");
+    const [rooms] = await db.query("SELECT * FROM battle_rooms WHERE room_code = ?", [roomCode]);
+    if (rooms.length === 0) throw new Error("Room not found");
 
     const room = rooms[0];
+    if (room.status !== "waiting") throw new Error("Battle already started");
 
-    if (room.status !== "waiting")
-        throw new Error("Battle already started");
-
-    if (room.current_players >= room.max_players)
-        throw new Error("Room is full");
+    const [playerCount] = await db.query("SELECT COUNT(*) AS cnt FROM battle_players WHERE room_code = ?", [roomCode]);
+    if (playerCount[0].cnt >= MAX_PLAYERS_DEFAULT) throw new Error("Room is full");
 
     const [existing] = await db.query(
-        `
-        SELECT id
-        FROM battle_players
-        WHERE room_id = ?
-        AND student_id = ?
-        `,
-        [
-            room.id,
-            userId
-        ]
+        "SELECT id FROM battle_players WHERE room_code = ? AND user_id = ?",
+        [roomCode, userId]
     );
-
-    if (existing.length > 0)
-        throw new Error("Already joined");
+    if (existing.length > 0) throw new Error("Already joined");
 
     await db.query(
-        `
-        INSERT INTO battle_players
-        (
-            room_id,
-            student_id,
-            score,
-            total_response_time_ms
-        )
-        VALUES (?, ?, 0, 0)
-        `,
-        [
-            room.id,
-            userId
-        ]
+        "INSERT INTO battle_players (room_code, user_id, score, correct_count, wrong_count) VALUES (?, ?, 0, 0, 0)",
+        [roomCode, userId]
     );
-
-    await db.query(
-        `
-        UPDATE battle_rooms
-        SET current_players = current_players + 1
-        WHERE id = ?
-        `,
-        [
-            room.id
-        ]
-    );
-
-    return {
-        roomId: room.id,
-        roomCode: room.room_code,
-        currentPlayers: room.current_players + 1,
-        maxPlayers: room.max_players,
-        currentQuestionIndex: room.current_question_index,
-        status: room.status,
-    };
-};
-
-/* ==========================================================
-   GET ROOM
-========================================================== */
-
-const getBattleRoom = async (roomCode) => {
-
-    const [rooms] = await db.query(
-        `
-        SELECT
-            id,
-            room_code,
-            host_id,
-            quiz_id,
-            max_players,
-            current_players,
-            current_question_index,
-            status,
-            created_at,
-            started_at,
-            ended_at
-        FROM battle_rooms
-        WHERE room_code = ?
-        `,
-        [
-            roomCode
-        ]
-    );
-
-    if (rooms.length === 0)
-        throw new Error("Battle room not found");
-
-    const room = rooms[0];
 
     return {
         roomId: room.id,
         roomCode: room.room_code,
         hostId: room.host_id,
         quizId: room.quiz_id,
-        maxPlayers: room.max_players,
-        currentPlayers: room.current_players,
-        currentQuestionIndex: room.current_question_index,
+        maxPlayers: MAX_PLAYERS_DEFAULT,
+        currentPlayers: playerCount[0].cnt + 1,
+        currentQuestionIndex: room.current_question || 0,
         status: room.status,
         createdAt: room.created_at,
-        startedAt: room.started_at,
-        endedAt: room.ended_at,
+        startedAt: null,
+        endedAt: room.finished_at,
     };
 };
 
-/* ==========================================================
-   GET PLAYERS
-========================================================== */
-
-  const getBattlePlayers = async (roomCode) => {
-
+const getBattleRoom = async (roomCode) => {
     const [rooms] = await db.query(
-        `
-        SELECT id
-        FROM battle_rooms
-        WHERE room_code = ?
-        `,
-        [
-            roomCode
-        ]
-     );
-
-    if (rooms.length === 0)
-        throw new Error("Room not found");
-
-    const roomId = rooms[0].id;
-
-    const [players] = await db.query(
-        `
-        SELECT
-            u.id,
-            u.username,
-            u.role,
-            bp.score,
-            bp.total_response_time_ms
-        FROM battle_players bp
-        JOIN users u
-            ON bp.student_id = u.id
-        WHERE bp.room_id = ?
-        ORDER BY
-            bp.score DESC,
-            bp.total_response_time_ms ASC
-        `,
-        [
-            roomId
-        ]
-    );
-
-    return players;
-};
-
-/* ==========================================================
-   START BATTLE
-========================================================== */
-
-const startBattle = async (hostId, roomCode) => {
-
-    const [rooms] = await db.query(
-        `
-        SELECT *
-        FROM battle_rooms
-        WHERE room_code = ?
-        `,
+        `SELECT id, room_code, host_id, quiz_id, status, current_question,
+                total_questions, time_limit, created_at, finished_at
+         FROM battle_rooms WHERE room_code = ?`,
         [roomCode]
     );
-
-    if (rooms.length === 0)
-        throw new Error("Room not found");
+    if (rooms.length === 0) throw new Error("Battle room not found");
 
     const room = rooms[0];
-
-    if (room.host_id !== hostId)
-        throw new Error("Only the host can start the battle");
-
-    if (room.status !== "waiting")
-        throw new Error("Battle already started");
-
-    if (room.current_players < 2)
-        throw new Error("At least 2 players are required");
-
-    await db.query(
-        `
-        UPDATE battle_rooms
-        SET
-            status = 'in_progress',
-            current_question_index = 0,
-            started_at = NOW()
-        WHERE id = ?
-        `,
-        [room.id]
+    const [playerCount] = await db.query(
+        "SELECT COUNT(*) AS cnt FROM battle_players WHERE room_code = ?",
+        [roomCode]
     );
 
     return {
         roomId: room.id,
         roomCode: room.room_code,
-        status: "in_progress",
-        currentPlayers: room.current_players,
-        maxPlayers: room.max_players,
-        currentQuestionIndex: 0
+        hostId: room.host_id,
+        quizId: room.quiz_id,
+        maxPlayers: MAX_PLAYERS_DEFAULT,
+        currentPlayers: playerCount[0].cnt,
+        currentQuestionIndex: room.current_question || 0,
+        status: room.status,
+        createdAt: room.created_at,
+        startedAt: null,
+        endedAt: room.finished_at,
     };
 };
-/* ==========================================================
-   GET CURRENT QUESTION
-========================================================== */
 
-const getBattleQuestions = async (roomCode) => {
+const getBattlePlayers = async (roomCode) => {
+    const [rooms] = await db.query("SELECT id FROM battle_rooms WHERE room_code = ?", [roomCode]);
+    if (rooms.length === 0) throw new Error("Room not found");
 
-    const [rooms] = await db.query(
-        `
-        SELECT
-            id,
-            quiz_id,
-            current_question_index,
-            status
-        FROM battle_rooms
-        WHERE room_code = ?
-        `,
+    const [players] = await db.query(
+        `SELECT u.id, u.username, u.role, bp.score
+         FROM battle_players bp
+         JOIN users u ON bp.user_id = u.id
+         WHERE bp.room_code = ?
+         ORDER BY bp.score DESC`,
         [roomCode]
     );
 
-    if (rooms.length === 0)
-        throw new Error("Room not found");
+    return players;
+};
+
+const startBattle = async (hostId, roomCode) => {
+    const [rooms] = await db.query("SELECT * FROM battle_rooms WHERE room_code = ?", [roomCode]);
+    if (rooms.length === 0) throw new Error("Room not found");
 
     const room = rooms[0];
+    if (room.host_id !== hostId) throw new Error("Only the host can start the battle");
+    if (room.status !== "waiting") throw new Error("Battle already started");
 
-    if (room.status === "completed") {
-        return {
-            completed: true
-        };
+    const [playerCount] = await db.query("SELECT COUNT(*) AS cnt FROM battle_players WHERE room_code = ?", [roomCode]);
+    if (playerCount[0].cnt < 2) throw new Error("At least 2 players are required");
+
+    await db.query(
+        "UPDATE battle_rooms SET status = 'active', current_question = 0 WHERE room_code = ?",
+        [roomCode]
+    );
+
+    return {
+        roomId: room.id,
+        roomCode: room.room_code,
+        status: "active",
+        currentPlayers: playerCount[0].cnt,
+        maxPlayers: MAX_PLAYERS_DEFAULT,
+        currentQuestionIndex: 0,
+    };
+};
+
+const getBattleQuestions = async (roomCode) => {
+    const [rooms] = await db.query(
+        "SELECT id, quiz_id, current_question, status FROM battle_rooms WHERE room_code = ?",
+        [roomCode]
+    );
+    if (rooms.length === 0) throw new Error("Room not found");
+
+    const room = rooms[0];
+    if (room.status === "finished") {
+        return { completed: true };
     }
 
     const [questions] = await db.query(
-        `
-        SELECT
-            id,
-            question,
-            option_a,
-            option_b,
-            option_c,
-            option_d,
-            marks
-        FROM questions
-        WHERE quiz_id = ?
-        ORDER BY id
-        LIMIT 1 OFFSET ?
-        `,
-        [
-            room.quiz_id,
-            room.current_question_index
-        ]
+        `SELECT id, question, option_a, option_b, option_c, option_d, marks
+         FROM questions WHERE quiz_id = ?
+         ORDER BY id LIMIT 1 OFFSET ?`,
+        [room.quiz_id, room.current_question || 0]
     );
 
     if (questions.length === 0) {
-        return {
-            completed: true
-        };
+        return { completed: true };
     }
 
     return {
         completed: false,
-        currentQuestionIndex: room.current_question_index,
-        question: questions[0]
+        currentQuestionIndex: room.current_question || 0,
+        question: questions[0],
     };
 };
-/* ==========================================================
-   SUBMIT BATTLE ANSWER
-========================================================== */
-/* ==========================================================
-   GET CURRENT BATTLE QUESTION
-========================================================== */
-exports.getBattleQuestions = async (req, res) => {
-    try {
-        const { roomCode } = req.params;
 
-        const result = await battleService.getBattleQuestions(roomCode);
-
-        return res.json({
-            success: true,
-            ...result
-        });
-
-    } catch (err) {
-        console.error(err);
-
-        return res.status(400).json({
-            success: false,
-            message: err.message
-        });
-    }
-};
 const submitBattleAnswer = async (userId, data) => {
+    const { roomCode, questionId, selectedOption, responseTime = 0 } = data;
 
-    const {
-        roomCode,
-        questionId,
-        selectedOption,
-        responseTime = 0
-    } = data;
-
-    /* -------------------------------
-       Find Battle Room
-    --------------------------------*/
-
-    const [rooms] = await db.query(
-        `
-        SELECT *
-        FROM battle_rooms
-        WHERE room_code = ?
-        `,
-        [roomCode]
-    );
-
-    if (rooms.length === 0)
-        throw new Error("Room not found");
+    const [rooms] = await db.query("SELECT * FROM battle_rooms WHERE room_code = ?", [roomCode]);
+    if (rooms.length === 0) throw new Error("Room not found");
 
     const room = rooms[0];
-    console.log("========== SUBMIT ==========");
-        console.log("User:", userId);
-        console.log("Room:", room.id);
-        console.log("Question:", questionId);
-    if (room.status !== "in_progress")
-        throw new Error("Battle is not active");
+    if (room.status !== "active") throw new Error("Battle is not active");
 
-    /* -------------------------------
-       Prevent Duplicate Answer
-    --------------------------------*/
+    const questionIndex = room.current_question || 0;
 
     const [alreadyAnswered] = await db.query(
-        `
-        SELECT id
-        FROM battle_answers
-        WHERE room_id = ?
-        AND student_id = ?
-        AND question_id = ?
-        `,
-        [
-            room.id,
-            userId,
-            questionId
-        ]
-    );
-    console.log("Already Answered:", alreadyAnswered);
-
-    if (alreadyAnswered.length > 0)
-        throw new Error("You have already answered this question");
-
-    /* -------------------------------
-       Get Question
-    --------------------------------*/
-
-    const [questions] = await db.query(
-        `
-        SELECT
-            correct_option,
-            marks
-        FROM questions
-        WHERE id = ?
-        `,
-        [questionId]
+        "SELECT id FROM battle_answers WHERE room_code = ? AND user_id = ? AND question_id = ?",
+        [roomCode, userId, questionId]
     );
 
-    if (questions.length === 0)
-        throw new Error("Question not found");
+    if (alreadyAnswered.length > 0) throw new Error("You have already answered this question");
+
+    const [questions] = await db.query("SELECT correct_option, marks FROM questions WHERE id = ?", [questionId]);
+    if (questions.length === 0) throw new Error("Question not found");
 
     const question = questions[0];
-
-    const isCorrect =
-        question.correct_option === selectedOption;
-
-    const score =
-        isCorrect ? question.marks : 0;
-
-    /* -------------------------------
-       Save Answer
-    --------------------------------*/
+    const isCorrect = question.correct_option === selectedOption;
+    const score = isCorrect ? question.marks : 0;
 
     await db.query(
-        `
-        INSERT INTO battle_answers
-        (
-            room_id,
-            student_id,
-            question_id,
-            selected_option,
-            is_correct,
-            response_time_ms
-        )
-        VALUES (?, ?, ?, ?, ?, ?)
-        `,
-        [
-            room.id,
-            userId,
-            questionId,
-            selectedOption,
-            isCorrect,
-            responseTime
-        ]
+        `INSERT INTO battle_answers (room_code, user_id, question_id, question_index, selected_option, is_correct, answer_time_ms, points_earned)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [roomCode, userId, questionId, questionIndex, selectedOption, isCorrect, responseTime, score]
     );
-
-    /* -------------------------------
-       Update Player Score
-    --------------------------------*/
 
     await db.query(
-        `
-        UPDATE battle_players
-        SET
-            score = score + ?,
-            total_response_time_ms =
-                total_response_time_ms + ?
-        WHERE room_id = ?
-        AND student_id = ?
-        `,
-        [
-            score,
-            responseTime,
-            room.id,
-            userId
-        ]
+        `UPDATE battle_players
+         SET score = score + ?,
+             correct_count = correct_count + ?,
+             wrong_count = wrong_count + ?
+         WHERE room_code = ? AND user_id = ?`,
+        [score, isCorrect ? 1 : 0, isCorrect ? 0 : 1, roomCode, userId]
     );
-
-    /* -------------------------------
-       Reward XP / Coins
-    --------------------------------*/
-
-    if (isCorrect) {
-
-        await db.query(
-            `
-            UPDATE users
-            SET
-                xp = xp + 10,
-                coins = coins + 5
-            WHERE id = ?
-            `,
-            [userId]
-        );
-
-    }
-
-    /* -------------------------------
-       Count Answers
-    --------------------------------*/
 
     const [answerCount] = await db.query(
-        `
-        SELECT COUNT(*) AS total
-        FROM battle_answers
-        WHERE room_id = ?
-        AND question_id = ?
-        `,
-        [
-            room.id,
-            questionId
-        ]
+        "SELECT COUNT(*) AS total FROM battle_answers WHERE room_code = ? AND question_id = ?",
+        [roomCode, questionId]
     );
-    console.log("Answer Count:", answerCount[0].total);
-    /* -------------------------------
-       Count Players
-    --------------------------------*/
 
     const [playerCount] = await db.query(
-        `
-        SELECT current_players
-        FROM battle_rooms
-        WHERE id = ?
-        `,
-        [room.id]
-    );
-    console.log("Player Count:", playerCount[0].current_players);
-
-    const everyoneAnswered =
-        answerCount[0].total ===
-        playerCount[0].current_players;
-
-    let battleCompleted = false;
-
-    /* -------------------------------
-       Move To Next Question
-    --------------------------------*/
-
-    if (everyoneAnswered) {
-
-        const nextIndex =
-            room.current_question_index + 1;
-
-        const [questionCount] = await db.query(
-            `
-            SELECT COUNT(*) AS total
-            FROM questions
-            WHERE quiz_id = ?
-            `,
-            [room.quiz_id]
-        );
-        console.log("Moving to next question...");
-
-        if (nextIndex >= questionCount[0].total) {
-            console.log("Battle Finished");
-
-            battleCompleted = true;
-
-            await db.query(
-                `
-                UPDATE battle_rooms
-                SET
-                    status = 'completed',
-                    ended_at = NOW()
-                WHERE id = ?
-                `,
-                [room.id]
-            );
-
-        } else {
-
-            console.log("Next Question Index:", nextIndex);
-
-            await db.query(
-                `
-                UPDATE battle_rooms
-                SET current_question_index = ?
-                WHERE id = ?
-                `,
-                [
-                    nextIndex,
-                    room.id
-                ]
-            );
-
-        }
-
-    }
-    console.log("Everyone Answered:", everyoneAnswered);
-
-    return {
-
-        correct: isCorrect,
-
-        score,
-
-        everyoneAnswered,
-
-        battleCompleted
-
-    };
-
-};
-/* ==========================================================
-   GET LEADERBOARD
-========================================================== */
-
-const getBattleLeaderboard = async (roomCode) => {
-
-    const [rooms] = await db.query(
-        `
-        SELECT id, status
-        FROM battle_rooms
-        WHERE room_code = ?
-        `,
+        "SELECT COUNT(*) AS total FROM battle_players WHERE room_code = ?",
         [roomCode]
     );
 
-    if (rooms.length === 0)
-        throw new Error("Room not found");
+    const everyoneAnswered = answerCount[0].total === playerCount[0].total;
+    let battleCompleted = false;
+
+    const [leaderboard] = await db.query(
+        `SELECT u.id, u.username, bp.score
+         FROM battle_players bp
+         JOIN users u ON u.id = bp.user_id
+         WHERE bp.room_code = ?
+         ORDER BY bp.score DESC`,
+        [roomCode]
+    );
+
+    if (global.io) {
+        global.io.to(roomCode).emit("battle:update-leaderboard", { leaderboard });
+    }
+
+    const manager = getManager();
+    if (manager) {
+        await manager.submitAnswer(roomCode, userId);
+    }
+
+    return { correct: isCorrect, score, everyoneAnswered, battleCompleted };
+};
+
+const getBattleLeaderboard = async (roomCode) => {
+    const [rooms] = await db.query("SELECT id, status FROM battle_rooms WHERE room_code = ?", [roomCode]);
+    if (rooms.length === 0) throw new Error("Room not found");
 
     const room = rooms[0];
 
     const [leaderboard] = await db.query(
-        `
-        SELECT
-            u.id,
-            u.username,
-            u.role,
-            bp.score,
-            bp.total_response_time_ms
-        FROM battle_players bp
-        JOIN users u
-            ON bp.student_id = u.id
-        WHERE bp.room_id = ?
-        ORDER BY
-            bp.score DESC,
-            bp.total_response_time_ms ASC,
-            u.username ASC
-        `,
-        [room.id]
+        `SELECT u.id, u.username, u.role, bp.score
+         FROM battle_players bp
+         JOIN users u ON bp.user_id = u.id
+         WHERE bp.room_code = ?
+         ORDER BY bp.score DESC`,
+        [roomCode]
     );
 
-    return {
-        status: room.status,
-        leaderboard
-    };
+    return { status: room.status, leaderboard };
 };
 
 module.exports = {
@@ -699,5 +284,5 @@ module.exports = {
     startBattle,
     getBattleQuestions,
     submitBattleAnswer,
-    getBattleLeaderboard
-  };
+    getBattleLeaderboard,
+};

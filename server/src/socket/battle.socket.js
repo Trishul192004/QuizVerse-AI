@@ -7,22 +7,51 @@ module.exports = (io,manager) => {
     PLAYER JOINS BATTLE
     =================================
     */
-    socket.on("battle:join", ({ roomCode, username }) => {
-      socket.join(roomCode);
+socket.on("battle:join", async ({ roomCode, username }) => {
+  try {
+    socket.join(roomCode);
 
-      console.log(`${username} joined ${roomCode}`);
+    console.log(`${username} joined ${roomCode}`);
 
-      const clients = io.sockets.adapter.rooms.get(roomCode);
+    let [roomRows] = await require("../config/db").query(
+      "SELECT status FROM battle_rooms WHERE room_code = ?",
+      [roomCode]
+    );
 
-      io.to(roomCode).emit("battle:player-list", {
-        players: clients ? clients.size : 0,
-      });
+    let battle = manager.getBattle(roomCode);
+    if (!battle && roomRows.length) {
+      if (roomRows[0].status === "active" || roomRows[0].status === "finished") {
+        battle = await manager.initializeBattle(roomCode);
+      }
+    }
 
-      io.to(roomCode).emit("battle:joined", {
-        username,
-        message: `${username} joined the battle`,
-      });
+    if (battle && roomRows.length && roomRows[0].status === "active") {
+      const question = battle.questions[battle.currentQuestion || 0];
+      if (question) {
+        io.to(roomCode).emit("battle:new-question", {
+          questionNumber: (battle.currentQuestion || 0) + 1,
+          totalQuestions: battle.questions.length,
+          question,
+        });
+        manager.startTimer(roomCode);
+      }
+    }
+
+    const players = await manager.getPlayers(roomCode);
+
+    io.to(roomCode).emit("battle:player-list", {
+      players,
     });
+
+    io.to(roomCode).emit("battle:joined", {
+      username,
+      message: `${username} joined the battle`,
+    });
+
+  } catch (err) {
+    console.error("battle:join error:", err);
+  }
+});
 
     /*
     =================================
@@ -70,11 +99,11 @@ socket.on("battle:start",async({roomCode})=>{
     */
    socket.on(
     "battle:submit",
-    async ({ roomCode, studentId }) => {
+    async ({ roomCode, userId }) => {
 
         await manager.submitAnswer(
             roomCode,
-            studentId
+            userId
         );
 
     }

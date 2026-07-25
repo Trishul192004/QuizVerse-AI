@@ -1,9 +1,11 @@
-const BattleManager=require("./socket/battle.manager");
+const BattleManager = require("./socket/battle.manager");
 
-module.exports=(io)=>{
+let manager;
 
-    const manager=new BattleManager(io);
+module.exports = (io) => {
+    manager = new BattleManager(io);
 
-    require("./socket/battle.socket")(io,manager);
-
+    require("./socket/battle.socket")(io, manager);
 };
+
+module.exports.getManager = () => manager;

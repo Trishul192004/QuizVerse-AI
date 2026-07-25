@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { socket } from "@/lib/socket";
 
 import {
   getBattleRoom,
@@ -22,146 +23,163 @@ export default function BattleRoomPage() {
   const [room, setRoom] = useState<any>(null);
   const [players, setPlayers] = useState<any[]>([]);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
-
-  // Server sends ONE current question
-  const [question, setQuestion] = useState<any>(null);
+    const [question, setQuestion] = useState<any>(null);
 
   const [selectedOption, setSelectedOption] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
 
+  async function loadBattle() {
+    try {
+      const roomRes = await getBattleRoom(roomCode);
+      const playersRes = await getBattlePlayers(roomCode);
+      const questionRes = await getBattleQuestions(roomCode);
+      const leaderboardRes = await getBattleLeaderboard(roomCode);
 
-async function loadBattle() {
-  try {
-    const roomRes = await getBattleRoom(roomCode);
-    const playersRes = await getBattlePlayers(roomCode);
-    const questionRes = await getBattleQuestions(roomCode);
-    const leaderboardRes = await getBattleLeaderboard(roomCode);
+      setRoom(roomRes.room);
+      setPlayers(playersRes.players || []);
+      setLeaderboard(leaderboardRes.leaderboard || []);
 
-    console.log("ROOM:", roomRes);
-    console.log("PLAYERS:", playersRes);
-    console.log("QUESTION RESPONSE:", questionRes);
-    console.log("LEADERBOARD:", leaderboardRes);
+      if (questionRes.completed) {
+        router.push(`/battle/result/${roomCode}`);
+        return;
+      }
 
-    setRoom(roomRes.room);
-    setPlayers(playersRes.players);
-    setLeaderboard(leaderboardRes.leaderboard);
-
-    if (questionRes.completed) {
-      router.push(`/battle/result/${roomCode}`);
-      return;
+      setQuestion(questionRes.question);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-
-    console.log("QUESTION:", questionRes.question);
-
-    setQuestion(questionRes.question);
-
-  } catch (err) {
-    console.error(err);
-  } finally {
-    setLoading(false);
   }
-}
+
   useEffect(() => {
     loadBattle();
   }, []);
 
-  // Refresh every 2 seconds
+   useEffect(() => {
+    socket.connect();
+
+    socket.on("connect", () => {
+      console.log("✅ Socket Connected:", socket.id);
+
+      socket.emit("battle:join", {
+        roomCode,
+        username: localStorage.getItem("username") || "Player",
+      });
+    });
+
+    socket.on("battle:player-list", ({ players }) => {
+      console.log("👥 Players:", players);
+      setPlayers(players);
+    });
+
+    socket.on("battle:update-leaderboard", ({ leaderboard }) => {
+      console.log("🏆 Leaderboard Updated");
+      setLeaderboard(leaderboard);
+    });
+
+    socket.on("battle:new-question", (data) => {
+      console.log("📖 New Question:", data);
+      console.log("Received Question ID:", data.question.id);
+      console.log("Current Question ID:", question?.id);
+      console.log("CLIENT GOT:", data.question.id);
+
+
+      setQuestion(data.question);
+      setSelectedOption("");
+      setSubmitted(false);
+      setTimeLeft(30);
+    });
+
+    socket.on("battle:timer", ({ remaining }) => {
+      setTimeLeft(remaining);
+    });
+
+    socket.on("battle:finished", () => {
+      router.push(`/battle/result/${roomCode}`);
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("❌ Socket Error:", err.message);
+    });
+
+    return () => {
+      socket.off("connect");
+      socket.off("battle:player-list");
+      socket.off("battle:update-leaderboard");
+      socket.off("battle:new-question");
+      socket.off("battle:timer");
+      socket.off("battle:finished");
+      socket.off("connect_error");
+      socket.disconnect();
+    };
+  }, [roomCode]);
+
+    // Reset state whenever a new question arrives
   useEffect(() => {
-    const interval = setInterval(loadBattle, 2000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Reset timer whenever server sends a new question
-useEffect(() => {
-  if (!question) return;
-
-  setTimeLeft(30);
-  setSelectedOption("");
-  setSubmitted(false);
-}, [question?.id]);
-
-  // Countdown timer
-useEffect(() => {
-
     if (!question) return;
 
-    if (submitted) return;
+    setSelectedOption("");
+    setSubmitted(false);
+    setTimeLeft(30);
+  }, [question?.id]);
 
+  // Local countdown (server timer updates will override this if received)
+  useEffect(() => {
+    if (!question) return;
+     if (submitted) return;
     if (timeLeft <= 0) return;
 
     const timer = setTimeout(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
 
-        setTimeLeft(prev => prev - 1);
+    return () => clearTimeout(timer);
+  }, [question, submitted, timeLeft]);
 
-    },1000);
-
-    return ()=>clearTimeout(timer);
-
-},[timeLeft, submitted, question]);
-
+  // Auto submit when timer expires
   useEffect(() => {
+      if (!question) return;
+    if (submitted) return;
+     if (timeLeft > 0) return;
 
-    if (timeLeft > 0) return;
+     console.log("⏰ Timer expired");
+    handleSubmit(true);
+  }, [timeLeft]);
 
+  async function handleSubmit(autoSubmit = false) {
     if (!question) return;
-
     if (submitted) return;
 
-    console.log("⏰ Timer expired");
-
-    handleSubmit(true);
-
-}, [timeLeft]);
-
-async function handleSubmit(autoSubmit = false) {
-
-  if (!question) return;
-
-  if (submitted) return;
-
-  console.log("=== HANDLE SUBMIT ===");
-
-  console.log({
-    roomCode,
-    questionId: question.id,
-    selectedOption,
-    responseTime: (30 - timeLeft) * 1000,
-  });
-
-if (!selectedOption && !autoSubmit) {
-  alert("Please select an option");
-  return;
-}
-
-  try {
-
-    setSubmitted(true);
-
-        const res = await submitBattleAnswer({
-            roomCode,
-            questionId: question.id,
-            selectedOption: selectedOption || "",
-            responseTime: (30 - timeLeft) * 1000,
-        });
-
-    if (res.result?.battleCompleted) {
-      router.push(`/battle/result/${roomCode}`);
+    if (!selectedOption && !autoSubmit) {
+      alert("Please select an option");
       return;
     }
 
-    await loadBattle();
+    try {
+      setSubmitted(true);
 
-  } catch (err) {
+      const res = await submitBattleAnswer({
+        roomCode,
+        questionId: question.id,
+        selectedOption: selectedOption || "",
+        responseTime: (30 - timeLeft) * 1000,
+      });
 
-    console.error(err);
+      console.log("Answer Response:", res);
 
-    // Allow retry if submission actually failed
-    setSubmitted(false);
+      if (res?.result?.battleCompleted) {
+        router.push(`/battle/result/${roomCode}`);
+        return;
+      }
+    } catch (err) {
+      console.error(err);
 
+      // Allow retry if request fails
+      setSubmitted(false);
+    }
   }
-}
 
   if (loading) {
     return (
@@ -173,19 +191,18 @@ if (!selectedOption && !autoSubmit) {
     );
   }
 
-    return (
-    <div className="max-w-6xl mx-auto p-8 space-y-8">
+  console.log("Players:", players);
+  console.log("Leaderboard:", leaderboard);
 
-      {/* Room Information */}
-      <div className="border rounded-lg p-5 shadow-sm">
-
+  return (
+    <div className="max-w-6xl mx-auto p-8 space-y-8">      {/* Room Information */}
+       <div className="border rounded-lg p-5 shadow-sm">
         <h1 className="text-3xl font-bold">
           ⚔️ Battle Room
         </h1>
 
         <div className="grid grid-cols-2 gap-4 mt-5">
-
-          <div>
+            <div>
             <p className="text-gray-500">Room Code</p>
             <p className="font-semibold">{roomCode}</p>
           </div>
@@ -193,12 +210,12 @@ if (!selectedOption && !autoSubmit) {
           <div>
             <p className="text-gray-500">Status</p>
             <p className="font-semibold capitalize">
-              {room?.status}
+              {room?.status ?? "-"}
             </p>
           </div>
 
           <div>
-            <p className="text-gray-500">Question</p>
+            <p className="text-gray-500">Current Question</p>
             <p className="font-semibold">
               {(room?.currentQuestionIndex ?? 0) + 1}
             </p>
@@ -210,92 +227,82 @@ if (!selectedOption && !autoSubmit) {
               {players.length}
             </p>
           </div>
-
-        </div>
-
+         </div>
       </div>
 
       {/* Timer */}
-      <div className="border rounded-lg p-5 text-center shadow-sm">
-
+      <div className="border rounded-lg p-5 shadow-sm text-center">
         <h2 className="text-xl font-semibold mb-2">
-          Time Remaining
+          ⏳ Time Remaining
         </h2>
 
         <p className="text-5xl font-bold">
           {timeLeft}s
         </p>
-
-      </div>
+       </div>
 
       {/* Players */}
       <div className="border rounded-lg p-5 shadow-sm">
-
-        <h2 className="text-xl font-semibold mb-4">
+         <h2 className="text-xl font-semibold mb-4">
           Players
         </h2>
 
-        {players.map((player: any) => (
+        {players.length === 0 ? (
+          <p>No players joined.</p>
+        ) : (
+          players.map((player: any, index: number) => (
+            <div
+              key={player.id ?? `${player.username}-${index}`}
+              className="flex justify-between border-b py-3"
+            >
+              <span>{player.username}</span>
 
-          <div
-            key={player.id}
-            className="flex justify-between border-b py-3"
-          >
-
-            <span>{player.username}</span>
-
-            <span className="font-semibold">
-              {player.score} pts
-            </span>
-
-          </div>
-
-        ))}
-
+              <span className="font-semibold">
+                {player.score ?? 0} pts
+              </span>
+            </div>
+          ))
+        )}
       </div>
 
-      {/* Current Question */}
+      {/* Question */}
       {question && (
-
-        <div className="border rounded-lg p-6 shadow-sm">
+         <div className="border rounded-lg p-6 shadow-sm">
 
           <h2 className="text-2xl font-bold mb-6">
             {question.question}
           </h2>
 
           {["A", "B", "C", "D"].map((option) => (
-
-            <button
+             <button
               key={option}
               onClick={() => setSelectedOption(option)}
-              className={`w-full text-left border rounded-lg p-4 mb-4 transition
-              ${
+              disabled={submitted}
+              className={`w-full text-left border rounded-lg p-4 mb-4 transition ${
                 selectedOption === option
                   ? "bg-blue-600 text-white border-blue-600"
                   : "hover:bg-gray-100"
               }`}
             >
-
-              <span className="font-semibold mr-2">
+                <span className="font-semibold mr-2">
                 {option}.
               </span>
 
               {question[`option_${option.toLowerCase()}`]}
-
-            </button>
-
+             </button>
           ))}
 
-            <button
-            onClick={handleSubmit}
+          <button
+            onClick={() => handleSubmit()}
             disabled={!selectedOption || submitted}
             className="mt-4 w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg transition"
-            >
-            {submitted ? "Waiting for next question..." : "Submit Answer"}
-            </button>
+          >
+            {submitted
+              ? "Waiting for next question..."
+              : "Submit Answer"}
+          </button>
 
         </div>
-
       )}
 
       {/* Leaderboard */}
@@ -306,40 +313,29 @@ if (!selectedOption && !autoSubmit) {
         </h2>
 
         {leaderboard.length === 0 ? (
-
-          <p>No players yet.</p>
-
+          <p>No leaderboard yet.</p>
         ) : (
-
-          leaderboard.map((player: any, index: number) => (
-
+            leaderboard.map((player: any, index: number) => (
             <div
-              key={player.id}
+              key={player.student_id ?? `${player.username}-${index}`}
               className="flex justify-between border-b py-3"
             >
-
-              <span>
-
+                <span>
                 {index === 0 && "🥇 "}
                 {index === 1 && "🥈 "}
                 {index === 2 && "🥉 "}
-
-                {player.username}
-
+                 {player.username}
               </span>
 
               <span className="font-semibold">
                 {player.score} pts
               </span>
-
-            </div>
-
+               </div>
           ))
-
-        )}
-
+          )}
       </div>
 
     </div>
   );
 }
+    
