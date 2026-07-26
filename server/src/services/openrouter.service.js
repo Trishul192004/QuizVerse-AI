@@ -1,6 +1,7 @@
 const axios = require("axios");
 
-const BASE_URL = "https://openrouter.ai/api/v1/chat/completions";
+const CHAT_URL = "https://openrouter.ai/api/v1/chat/completions";
+const EMBEDDING_URL = "https://openrouter.ai/api/v1/embeddings";
 
 async function generateResponse(messages) {
   try {
@@ -23,7 +24,7 @@ async function generateResponse(messages) {
     console.log("MODEL:", process.env.AI_MODEL);
 
     const response = await axios.post(
-  BASE_URL,
+  CHAT_URL,
   {
     model: process.env.AI_MODEL,
     messages,
@@ -66,7 +67,39 @@ catch (error) {
     throw error;
   }
 }
+async function generateEmbedding(text) {
+  try {
+    const response = await axios.post(
+      EMBEDDING_URL,
+      {
+        model: process.env.AI_EMBEDDING_MODEL,
+        input: text,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "http://localhost:5000",
+          "X-Title": "QuizVerse AI",
+        },
+      }
+    );
 
+    return response.data.data[0].embedding;
+  } catch (error) {
+    console.error("Embedding Error:");
+
+    if (error.response) {
+      console.error(error.response.status);
+      console.error(JSON.stringify(error.response.data, null, 2));
+    } else {
+      console.error(error.message);
+    }
+
+    throw error;
+  }
+}
 module.exports = {
   generateResponse,
+  generateEmbedding
 };
