@@ -21,8 +21,7 @@ const aiRoutes = require("./routes/ai.routes");
 const studentQuizRoutes = require("./routes/studentQuiz.routes");
 const battleRoutes = require("./routes/battle.routes");
 const battleAIRoutes = require("./routes/battleAI.routes");
-
-/*
+const ragRoutes = require("./rag/routes/rag.routes");/*
 =================================
 GLOBAL MIDDLEWARE
 =================================
@@ -39,6 +38,7 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/api/rag", ragRoutes);
 
 /*
 =================================
