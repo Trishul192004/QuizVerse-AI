@@ -1,3 +1,4 @@
+console.log(">>> LOADED RAG SERVICE <<<");
 const db = require("../../config/db");
 const fs = require("fs");
 const { chunkText } = require("../utils/textChunker");
@@ -6,6 +7,8 @@ const { generateEmbedding } = require("../../services/openrouter.service");
 const { retrieveRelevantChunks } = require("./retrieval.service");
 const { buildRagPrompt } = require("../prompts/rag.prompt");
 const { generateText } = require("../../services/ai.service");
+const { generateQuiz } = require("./quiz-generator.service");
+console.log("generateQuiz:", typeof generateQuiz);
 
 const uploadDocument = async (req) => {
     if (!req.file) {
@@ -194,9 +197,42 @@ const askQuestion = async (req) => {
     };
 };
 
+const generateQuizFromDocument = async (req) => {
+
+    const {
+        documentId,
+        numberOfQuestions,
+        difficulty,
+        questionType,
+    } = req.body;
+
+    if (!documentId) {
+        throw new Error("Document ID is required");
+    }
+
+    const quiz = await generateQuiz(documentId, {
+        numberOfQuestions,
+        difficulty,
+        questionType,
+    });
+
+    return {
+        success: true,
+        quiz,
+    };
+};
+
+console.log("Exporting:", {
+    uploadDocument: typeof uploadDocument,
+    getDocuments: typeof getDocuments,
+    deleteDocument: typeof deleteDocument,
+    askQuestion: typeof askQuestion,
+    generateQuizFromDocument: typeof generateQuizFromDocument,
+});
 module.exports = {
     uploadDocument,
     getDocuments,
    deleteDocument,
     askQuestion,
+    generateQuizFromDocument,
 };
