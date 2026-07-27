@@ -18,7 +18,7 @@ const questionRoutes = require("./routes/question.routes");
 const studentRoutes = require("./routes/student.routes");
 const teacherRoutes = require("./routes/teacher.routes");
 const aiRoutes = require("./routes/ai.routes");
-const studentQuizRoutes = require("./routes/studentQuiz.routes");
+//const studentQuizRoutes = require("./routes/studentQuiz.routes");
 const battleRoutes = require("./routes/battle.routes");
 const battleAIRoutes = require("./routes/battleAI.routes");
 const ragRoutes = require("./rag/routes/rag.routes");/*
@@ -83,7 +83,7 @@ app.use("/api/questions", questionRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/teacher", teacherRoutes);
 app.use("/api/ai", aiRoutes);
-app.use("/api/student", studentQuizRoutes);
+//app.use("/api/student", studentQuizRoutes);
 app.use("/api/battle", battleRoutes);
 app.use("/api/battle-ai", battleAIRoutes);
 

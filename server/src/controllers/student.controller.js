@@ -222,6 +222,142 @@ exports.getStudentClassroomQuizzes = async (req, res) => {
 
   }
   };
+
+
+  exports.getAIStudyQuizzes = async (req, res) => {
+  try {
+    const { classroomId } = req.params;
+
+    // Verify student belongs to classroom
+    const [membership] = await db.query(
+      `
+      SELECT id
+      FROM classroom_students
+      WHERE classroom_id = ?
+      AND student_id = ?
+      `,
+      [classroomId, req.user.id]
+    );
+
+    if (membership.length === 0) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not enrolled in this classroom",
+      });
+    }
+
+    // Get quizzes of this classroom
+    const [quizzes] = await db.query(
+      `
+      SELECT
+        id,
+        title,
+        description,
+        total_marks,
+        time_limit,
+        created_at
+      FROM quizzes
+      WHERE classroom_id = ?
+      ORDER BY created_at DESC
+      `,
+      [classroomId]
+    );
+
+    return res.status(200).json({
+      success: true,
+      quizzes,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+exports.getQuizForStudent = async (req, res) => {
+  try {
+    const { quizId } = req.params;
+
+    // Load quiz
+    const [quizRows] = await db.query(
+      `
+      SELECT
+        id,
+        classroom_id,
+        title,
+        description,
+        time_limit,
+        total_marks
+      FROM quizzes
+      WHERE id = ?
+      `,
+      [quizId]
+    );
+
+    if (quizRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Quiz not found",
+      });
+    }
+
+    const quiz = quizRows[0];
+
+    // Verify student belongs to classroom
+    const [membership] = await db.query(
+      `
+      SELECT id
+      FROM classroom_students
+      WHERE classroom_id = ?
+      AND student_id = ?
+      `,
+      [quiz.classroom_id, req.user.id]
+    );
+
+    if (membership.length === 0) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not enrolled in this classroom",
+      });
+    }
+
+    // Load questions
+    const [questions] = await db.query(
+      `
+      SELECT
+        id,
+        question,
+        option_a,
+        option_b,
+        option_c,
+        option_d,
+        marks
+      FROM questions
+      WHERE quiz_id = ?
+      ORDER BY id ASC
+      `,
+      [quizId]
+    );
+
+    return res.status(200).json({
+      success: true,
+      quiz,
+      questions,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
 exports.startQuiz = async (req, res) => {
   try {
 
@@ -712,6 +848,126 @@ console.log("Update Result:", updateResult);
 
   } finally {
     connection.release();
+  }
+};
+
+/*
+=================================
+REVIEW QUIZ
+GET /api/student/review/:attemptId
+=================================
+*/
+
+exports.getQuizReview = async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+
+    /*
+    =================================
+    VERIFY ATTEMPT
+    =================================
+    */
+
+    const [attemptRows] = await db.query(
+      `
+      SELECT
+        id,
+        quiz_id,
+        student_id,
+        score,
+        total_marks,
+        status
+      FROM quiz_attempts
+      WHERE id = ?
+      `,
+      [attemptId]
+    );
+
+    if (attemptRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Attempt not found",
+      });
+    }
+
+    const attempt = attemptRows[0];
+
+    if (attempt.student_id !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    /*
+    =================================
+    LOAD QUESTIONS + ANSWERS
+    =================================
+    */
+
+    const [questions] = await db.query(
+      `
+      SELECT
+        q.id,
+        q.question,
+        q.option_a,
+        q.option_b,
+        q.option_c,
+        q.option_d,
+        q.correct_option,
+        q.explanation,
+        q.marks,
+
+        sa.selected_option,
+        sa.is_correct,
+        sa.marks_awarded
+
+      FROM questions q
+
+      LEFT JOIN student_answers sa
+        ON sa.question_id = q.id
+       AND sa.attempt_id = ?
+
+      WHERE q.quiz_id = ?
+
+      ORDER BY q.id ASC
+      `,
+      [
+        attempt.id,
+        attempt.quiz_id,
+      ]
+    );
+
+    const correct = questions.filter(
+      (q) => q.is_correct === 1
+    ).length;
+
+    const wrong = questions.filter(
+      (q) => q.selected_option && q.is_correct === 0
+    ).length;
+
+    return res.status(200).json({
+      success: true,
+
+      result: {
+        score: attempt.score,
+        total_marks: attempt.total_marks,
+        correct,
+        wrong,
+      },
+
+      questions,
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+
   }
 };
 exports.getLeaderboard = async (req, res) => {

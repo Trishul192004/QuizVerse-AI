@@ -43,13 +43,29 @@ router.get(
   authorizeRoles("student"),
   studentController.getStudentClassroomQuizzes
 );
-
+/*
+=================================
+AI STUDY QUIZZES
+=================================
+*/
+router.get(
+  "/classrooms/:classroomId/ai-study/quizzes",
+  verifyToken,
+  authorizeRoles("student"),
+  studentController.getAIStudyQuizzes
+);
+/*
+=================================
+LEADERBOARD
+=================================
+*/
 router.get(
   "/leaderboard",
   verifyToken,
   authorizeRoles("student"),
   studentController.getLeaderboard
 );
+
 /*
 =================================
 START QUIZ
@@ -86,4 +102,46 @@ router.post(
   studentController.submitQuiz
 );
 
+/*
+=================================
+REVIEW QUIZ
+=================================
+*/
+router.get(
+  "/review/:attemptId",
+  verifyToken,
+  authorizeRoles("student"),
+  studentController.getQuizReview
+);
+
+/*
+=================================
+AI STUDY (RAG)
+=================================
+*/
+/*
+// List all published AI Study quizzes available to the student
+router.get(
+  "/quizzes",
+  verifyToken,
+  authorizeRoles("student"),
+  studentController.getAvailableQuizzes
+);
+
+// Get a single AI Study quiz
+router.get(
+  "/quizzes/:quizId",
+  verifyToken,
+  authorizeRoles("student"),
+  studentController.getQuizForStudent
+);
+
+// Submit AI Study quiz
+router.post(
+  "/quizzes/:quizId/submit",
+  verifyToken,
+  authorizeRoles("student"),
+  studentController.submitAIStudyQuiz
+);
+*/
 module.exports = router;
