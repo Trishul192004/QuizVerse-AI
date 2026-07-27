@@ -1,5 +1,7 @@
 const db = require("../config/db");
 
+const quizService = require("../services/quiz.service");
+
 exports.createQuiz = async (req, res) => {
   try {
 
@@ -535,6 +537,53 @@ function getCorrectOption(q) {
 
   } finally {
     connection.release();
+  }
+};
+
+exports.publishQuiz = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const [quiz] = await db.query(
+      `
+      SELECT id
+      FROM quizzes
+      WHERE id = ?
+      AND teacher_id = ?
+      `,
+      [id, req.user.id]
+    );
+
+    if (quiz.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Quiz not found",
+      });
+    }
+
+    await db.query(
+      `
+      UPDATE quizzes
+      SET status = 'published'
+      WHERE id = ?
+      `,
+      [id]
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Quiz published successfully",
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+
   }
 };
 exports.getTeacherQuizzes = async (req, res) => {

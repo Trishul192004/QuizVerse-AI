@@ -13,14 +13,21 @@ async function saveQuiz({
   try {
     await connection.beginTransaction();
 
-    // Calculate total marks
     const total_marks = questions.length;
 
-    // Insert quiz
     const [quizResult] = await connection.query(
-      `INSERT INTO quizzes
-      (classroom_id, teacher_id, title, description, time_limit, total_marks)
-      VALUES (?, ?, ?, ?, ?, ?)`,
+      `
+      INSERT INTO quizzes
+      (
+        classroom_id,
+        teacher_id,
+        title,
+        description,
+        time_limit,
+        total_marks
+      )
+      VALUES (?, ?, ?, ?, ?, ?)
+      `,
       [
         classroom_id,
         teacher_id,
@@ -33,10 +40,10 @@ async function saveQuiz({
 
     const quizId = quizResult.insertId;
 
-    // Insert questions
     for (const q of questions) {
       await connection.query(
-        `INSERT INTO questions
+        `
+        INSERT INTO questions
         (
           quiz_id,
           question,
@@ -48,7 +55,8 @@ async function saveQuiz({
           marks,
           explanation
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `,
         [
           quizId,
           q.question,
@@ -66,17 +74,24 @@ async function saveQuiz({
     await connection.commit();
 
     return quizId;
+
   } catch (err) {
+
     await connection.rollback();
     throw err;
+
   } finally {
+
     connection.release();
+
   }
 }
 
 function getCorrectOption(question) {
+
   const index = question.options.findIndex(
-    (option) => option.trim() === question.answer.trim()
+    (option) =>
+      option.trim() === question.answer.trim()
   );
 
   if (index === 0) return "A";
@@ -89,6 +104,40 @@ function getCorrectOption(question) {
   );
 }
 
+async function getTeacherQuizzes(teacherId) {
+
+  const [rows] = await db.query(
+    `
+    SELECT
+      q.id,
+      q.title,
+      q.description,
+      q.time_limit,
+      q.total_marks,
+      q.classroom_id,
+      q.created_at,
+      COUNT(ques.id) AS total_questions
+    FROM quizzes q
+    LEFT JOIN questions ques
+      ON q.id = ques.quiz_id
+    WHERE q.teacher_id = ?
+    GROUP BY
+      q.id,
+      q.title,
+      q.description,
+      q.time_limit,
+      q.total_marks,
+      q.classroom_id,
+      q.created_at
+    ORDER BY q.created_at DESC
+    `,
+    [teacherId]
+  );
+
+  return rows;
+}
+
 module.exports = {
   saveQuiz,
+  getTeacherQuizzes,
 };

@@ -7,6 +7,7 @@ import {
   Copy,
   CalendarDays,
   Trash2,
+  ArrowRight,
 } from "lucide-react";
 
 import { toast } from "sonner";
@@ -18,6 +19,7 @@ interface ClassroomCardProps {
   students: number;
   createdAt: string;
   onDelete: (id: number) => void;
+  aiStudy?: boolean;
 }
 
 export default function ClassroomCard({
@@ -27,6 +29,7 @@ export default function ClassroomCard({
   students,
   createdAt,
   onDelete,
+  aiStudy = false,
 }: ClassroomCardProps) {
 
   const router = useRouter();
@@ -52,9 +55,15 @@ export default function ClassroomCard({
   return (
 
     <div
-      onClick={() =>
-        router.push(`/teacher/classrooms/${id}`)
-      }
+onClick={() => {
+  alert(`AI Study = ${aiStudy}`);
+
+  router.push(
+    aiStudy
+      ? `/teacher/rag/classroom/${id}`
+      : `/teacher/classrooms/${id}`
+  );
+}}
       className="
         cursor-pointer
         rounded-2xl
@@ -75,40 +84,44 @@ export default function ClassroomCard({
           {name}
         </h2>
 
-        <div className="flex items-center gap-2">
+        {!aiStudy && (
 
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              copyCode();
-            }}
-            className="
-              rounded-lg
-              p-2
-              hover:bg-slate-100
-            "
-            title="Copy Join Code"
-          >
-            <Copy size={18} />
-          </button>
+          <div className="flex items-center gap-2">
 
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(id);
-            }}
-            className="
-              rounded-lg
-              p-2
-              text-red-500
-              hover:bg-red-100
-            "
-            title="Delete Classroom"
-          >
-            <Trash2 size={18} />
-          </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                copyCode();
+              }}
+              className="
+                rounded-lg
+                p-2
+                hover:bg-slate-100
+              "
+              title="Copy Join Code"
+            >
+              <Copy size={18} />
+            </button>
 
-        </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(id);
+              }}
+              className="
+                rounded-lg
+                p-2
+                text-red-500
+                hover:bg-red-100
+              "
+              title="Delete Classroom"
+            >
+              <Trash2 size={18} />
+            </button>
+
+          </div>
+
+        )}
 
       </div>
 
@@ -134,22 +147,51 @@ export default function ClassroomCard({
 
         </div>
 
-        <div
-          className="
-            rounded-lg
-            bg-slate-100
-            p-3
-            font-mono
-            font-semibold
-            tracking-widest
-          "
-        >
-          Join Code: {joinCode}
-        </div>
+        {!aiStudy ? (
+
+          <div
+            className="
+              rounded-lg
+              bg-slate-100
+              p-3
+              font-mono
+              font-semibold
+              tracking-widest
+            "
+          >
+            Join Code: {joinCode}
+          </div>
+
+        ) : (
+
+          <button
+            className="
+              mt-4
+              flex
+              w-full
+              items-center
+              justify-center
+              gap-2
+              rounded-lg
+              bg-indigo-600
+              px-4
+              py-3
+              font-semibold
+              text-white
+              transition
+              hover:bg-indigo-700
+            "
+          >
+            Open AI Study
+            <ArrowRight size={18} />
+          </button>
+
+        )}
 
       </div>
 
     </div>
 
   );
+
 }

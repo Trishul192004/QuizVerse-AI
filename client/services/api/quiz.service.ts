@@ -43,6 +43,17 @@ export const getQuizById = async (
   return response.data;
 };
 
+export const publishQuiz = async (
+    quizId: number
+) => {
+
+    const { data } = await api.put(
+        `/quizzes/${quizId}/publish`
+    );
+
+    return data;
+
+};
 export const deleteQuiz = async (
   quizId: number
 ) => {

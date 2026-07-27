@@ -201,8 +201,12 @@ const generateQuizFromDocument = async (req) => {
 
     const {
         documentId,
-        numberOfQuestions,
-        difficulty,
+        classroomId = null,
+        title = "AI Generated Quiz",
+        description = "Generated from uploaded PDF",
+        timeLimit = 30,
+        numberOfQuestions = 10,
+        difficulty = "medium",
         questionType,
     } = req.body;
 
@@ -211,15 +215,17 @@ const generateQuizFromDocument = async (req) => {
     }
 
     const quiz = await generateQuiz(documentId, {
+        teacherId: req.user.id,
+        classroomId,
+        title,
+        description,
+        timeLimit,
         numberOfQuestions,
         difficulty,
         questionType,
     });
 
-    return {
-        success: true,
-        quiz,
-    };
+    return quiz;
 };
 
 console.log("Exporting:", {

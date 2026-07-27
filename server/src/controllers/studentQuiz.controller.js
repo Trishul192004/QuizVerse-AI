@@ -29,8 +29,8 @@ exports.getAvailableQuizzes = async (req, res) => {
         ON cs.classroom_id = c.id
       LEFT JOIN questions ques
         ON ques.quiz_id = q.id
-      WHERE cs.student_id = ?
-      GROUP BY
+        WHERE cs.student_id = ?
+        AND q.status = 'published'      GROUP BY
         q.id,
         q.title,
         q.description,
@@ -91,6 +91,8 @@ exports.getQuizForStudent = async (req, res) => {
         q.id = ?
       AND
         cs.student_id = ?
+      AND 
+        q.status = 'published'
       `,
       [id, studentId]
     );
@@ -408,7 +410,7 @@ console.log("Student:", studentId);
 console.log("Score:", totalScore);
 console.log("XP:", earnedXP);
 console.log("Coins:", earnedCoins);
-
+    
 await connection.query(
   `
   UPDATE users

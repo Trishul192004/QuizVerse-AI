@@ -13,6 +13,10 @@ const uploadMiddleware = upload.single("file");
 
 console.log("uploadMiddleware:", typeof uploadMiddleware);
 console.log("uploadDocument:", typeof ragController.uploadDocument);
+console.log(
+    "generateQuizFromDocument:",
+    typeof ragController.generateQuizFromDocument
+);
 
 router.post(
     "/upload",
@@ -42,7 +46,7 @@ router.post(
 router.post(
     "/generate-quiz",
     verifyToken,
-    ragController.generateQuiz
+    ragController.generateQuizFromDocument
 );
 
 module.exports = router;

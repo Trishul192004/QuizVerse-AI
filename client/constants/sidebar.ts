@@ -1,8 +1,8 @@
- import {
+import {
   LayoutDashboard,
   GraduationCap,
   BrainCircuit,
-  Trophy,
+  BookOpen,
   Users,
   UserCircle,
   Settings,
@@ -41,9 +41,9 @@ export const sidebarItems: SidebarSection[] = [
         icon: Swords,
       },
       {
-        title: "Leaderboard",
-        href: "/leaderboard",
-        icon: Trophy,
+        title: "AI Study",
+        href: "/teacher/rag",
+        icon: BookOpen,
       },
       {
         title: "Profile",
@@ -81,9 +81,9 @@ export const sidebarItems: SidebarSection[] = [
         icon: Swords,
       },
       {
-        title: "Leaderboard",
-        href: "/leaderboard",
-        icon: Trophy,
+        title: "AI Study",
+        href: "/student/rag",
+        icon: BookOpen,
       },
       {
         title: "Profile",

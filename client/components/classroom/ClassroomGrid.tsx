@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
 import { toast } from "sonner";
 
 import ClassroomCard from "./ClassroomCard";
@@ -18,13 +17,16 @@ interface Classroom {
   created_at: string;
 }
 
-export default function ClassroomGrid() {
+interface ClassroomGridProps {
+  aiStudy?: boolean;
+}
 
-  const [classrooms, setClassrooms] =
-    useState<Classroom[]>([]);
+export default function ClassroomGrid({
+  aiStudy = false,
+}: ClassroomGridProps) {
 
-  const [loading, setLoading] =
-    useState(true);
+  const [classrooms, setClassrooms] = useState<Classroom[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
 
@@ -34,40 +36,23 @@ export default function ClassroomGrid() {
 
       try {
 
-        const response =
-          await getTeacherClassrooms();
+        const response = await getTeacherClassrooms();
 
         if (active) {
-
-          setClassrooms(
-            response.classrooms
-          );
-
+          setClassrooms(response.classrooms);
         }
 
-      } catch (error: unknown) {
+      } catch (error: any) {
 
-        const message =
-          error && typeof error === "object" &&
-          "response" in error &&
-          error.response &&
-          typeof error.response === "object" &&
-          "data" in error.response &&
-          error.response.data &&
-          typeof error.response.data === "object" &&
-          "message" in error.response.data &&
-          typeof error.response.data.message === "string"
-            ? error.response.data.message
-            : "Failed to load classrooms";
-
-        toast.error(message);
+        toast.error(
+          error?.response?.data?.message ??
+            "Failed to load classrooms."
+        );
 
       } finally {
 
         if (active) {
-
           setLoading(false);
-
         }
 
       }
@@ -77,57 +62,36 @@ export default function ClassroomGrid() {
     void loadClassrooms();
 
     return () => {
-
       active = false;
-
     };
 
   }, []);
 
-  const handleDelete = async (
-    id: number
-  ) => {
+  const handleDelete = async (id: number) => {
 
-    const confirmed =
-      window.confirm(
-        "Are you sure you want to delete this classroom?"
-      );
+    if (aiStudy) return;
+
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this classroom?"
+    );
 
     if (!confirmed) return;
 
     try {
 
-      const response =
-        await deleteClassroom(id);
+      const response = await deleteClassroom(id);
 
-      toast.success(
-        response.message
-      );
+      toast.success(response.message);
 
       setClassrooms((prev) =>
-        prev.filter(
-          (classroom) =>
-            classroom.id !== id
-        )
+        prev.filter((classroom) => classroom.id !== id)
       );
 
-    } catch (error: unknown) {
-
-      const message =
-        error && typeof error === "object" &&
-        "response" in error &&
-        error.response &&
-        typeof error.response === "object" &&
-        "data" in error.response &&
-        error.response.data &&
-        typeof error.response.data === "object" &&
-        "message" in error.response.data &&
-        typeof error.response.data.message === "string"
-          ? error.response.data.message
-          : "Failed to delete classroom";
+    } catch (error: any) {
 
       toast.error(
-        message
+        error?.response?.data?.message ??
+          "Failed to delete classroom."
       );
 
     }
@@ -135,23 +99,15 @@ export default function ClassroomGrid() {
   };
 
   if (loading) {
-
-    return (
-      <p>
-        Loading classrooms...
-      </p>
-    );
-
+    return <p>Loading classrooms...</p>;
   }
 
   if (classrooms.length === 0) {
-
     return (
       <p className="text-slate-500">
         No classrooms found.
       </p>
     );
-
   }
 
   return (
@@ -174,6 +130,7 @@ export default function ClassroomGrid() {
             year: "numeric",
           })}
           onDelete={handleDelete}
+          aiStudy={aiStudy}
         />
 
       ))}

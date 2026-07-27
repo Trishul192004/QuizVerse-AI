@@ -18,6 +18,7 @@ const {
   deleteQuiz,
   saveAIQuiz,
   getTeacherQuizzes,
+  publishQuiz,
 } = require("../controllers/quiz.controller");
 
 /*
@@ -101,6 +102,20 @@ router.put(
   verifyToken,
   authorizeRoles("teacher"),
   updateQuiz
+);
+
+/*
+=================================
+PUBLISH QUIZ
+PUT /api/quizzes/:id/publish
+(Teacher Only)
+=================================
+*/
+router.put(
+  "/:id/publish",
+  verifyToken,
+  authorizeRoles("teacher"),
+  publishQuiz
 );
 
 /*
