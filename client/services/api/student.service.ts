@@ -155,3 +155,18 @@ export const getLeaderboard = async () => {
 };
 
  
+/*
+========================================
+GET AI STUDY QUIZZES
+========================================
+*/
+
+export const getAIStudyQuizzes = async (
+  classroomId: number
+) => {
+  const response = await api.get(
+    `/student/classrooms/${classroomId}/ai-study/quizzes`
+  );
+
+  return response.data;
+};

@@ -8,6 +8,7 @@ import Link from "next/link";
 
 import {
   getStudentClassroomQuizzes,
+    getAIStudyQuizzes,
   startQuiz,
 } from "@/services/api/student.service";
 
@@ -32,16 +33,21 @@ export default function StudentClassroomDetailPage() {
 
   const [classroom, setClassroom] = useState<Classroom | null>(null);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [aiStudyQuizzes, setAIStudyQuizzes] = useState<Quiz[]>([]);
   const [loading, setLoading] = useState(true);
   const [startingQuizId, setStartingQuizId] = useState<number | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const response = await getStudentClassroomQuizzes(classroomId);
+        const [classroomResponse, aiStudyResponse] = await Promise.all([
+        getStudentClassroomQuizzes(classroomId),
+        getAIStudyQuizzes(classroomId),
+]);
 
-        setClassroom(response.classroom);
-        setQuizzes(response.quizzes);
+        setClassroom(classroomResponse.classroom);
+        setQuizzes(classroomResponse.quizzes);
+        setAIStudyQuizzes(aiStudyResponse.quizzes);
       } catch (error: any) {
         console.error(error);
 

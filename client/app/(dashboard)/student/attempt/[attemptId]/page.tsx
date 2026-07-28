@@ -94,10 +94,7 @@ import {
     if (loading) return;
     if (submitting) return;
     if (hasSubmitted.current) return;
-if (unanswered.length > 0 && !showSubmitDialog) {
-    setShowSubmitDialog(true);
-    return;
-}
+
 
     const timer = setTimeout(() => {
       setSecondsLeft((prev) => prev - 1);

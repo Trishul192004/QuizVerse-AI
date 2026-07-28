@@ -36,11 +36,7 @@ export const sidebarItems = [
         href: "/teacher/rag",
         icon: BookOpen,
       },
-      {
-        title: "Profile",
-        href: "/teacher/profile",
-        icon: User,
-      },
+
     ],
   },
 
@@ -72,11 +68,7 @@ export const sidebarItems = [
         href: "/student/rag",
         icon: BookOpen,
       },
-      {
-        title: "Profile",
-        href: "/student/profile",
-        icon: User,
-      },
+
     ],
   },
 ];

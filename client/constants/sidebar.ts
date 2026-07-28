@@ -4,7 +4,6 @@ import {
   BrainCircuit,
   BookOpen,
   Users,
-  UserCircle,
   Settings,
   ShieldCheck,
   Swords,
@@ -18,7 +17,6 @@ export const sidebarItems: SidebarSection[] = [
   // ==========================
   {
     role: "teacher",
-
     items: [
       {
         title: "Dashboard",
@@ -45,11 +43,6 @@ export const sidebarItems: SidebarSection[] = [
         href: "/teacher/rag",
         icon: BookOpen,
       },
-      {
-        title: "Profile",
-        href: "/profile",
-        icon: UserCircle,
-      },
     ],
   },
 
@@ -58,7 +51,6 @@ export const sidebarItems: SidebarSection[] = [
   // ==========================
   {
     role: "student",
-
     items: [
       {
         title: "Dashboard",
@@ -85,11 +77,6 @@ export const sidebarItems: SidebarSection[] = [
         href: "/student/rag",
         icon: BookOpen,
       },
-      {
-        title: "Profile",
-        href: "/profile",
-        icon: UserCircle,
-      },
     ],
   },
 
@@ -98,7 +85,6 @@ export const sidebarItems: SidebarSection[] = [
   // ==========================
   {
     role: "admin",
-
     items: [
       {
         title: "Dashboard",

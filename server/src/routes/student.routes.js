@@ -113,7 +113,17 @@ router.get(
   authorizeRoles("student"),
   studentController.getQuizReview
 );
-
+/*
+=================================
+GET AI STUDY QUIZ
+=================================
+*/
+router.get(
+  "/ai-study/quizzes/:quizId",
+  verifyToken,
+  authorizeRoles("student"),
+  studentController.getQuizForStudent
+);
 /*
 =================================
 AI STUDY (RAG)
