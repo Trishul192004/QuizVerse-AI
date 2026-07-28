@@ -2,6 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import {
+  BookOpen,
+  Clock3,
+  Brain,
+  Sparkles,
+} from "lucide-react";
 
 import {
   getQuizById,
@@ -39,6 +45,7 @@ interface Props {
 export default function StudentQuiz({
   quizId,
 }: Props) {
+
   const [loading, setLoading] = useState(true);
 
   const [quiz, setQuiz] =
@@ -55,9 +62,11 @@ export default function StudentQuiz({
 
   const [result, setResult] =
     useState<any>(null);
-    const [attemptId, setAttemptId] =
+
+  const [attemptId, setAttemptId] =
     useState<number | null>(null);
-      useEffect(() => {
+
+  useEffect(() => {
     loadQuiz();
   }, []);
 
@@ -65,22 +74,27 @@ export default function StudentQuiz({
     try {
       setLoading(true);
 
-    const quizRes = await getQuizById(quizId);
+      const quizRes = await getQuizById(quizId);
 
-    setQuiz(quizRes.quiz);
+      setQuiz(quizRes.quiz);
 
-     const startRes = await startQuiz(quizId);
+      const startRes = await startQuiz(quizId);
 
-    setAttemptId(startRes.attemptId);
+      setAttemptId(startRes.attemptId);
+
     } catch (err: any) {
+
       console.error(err);
 
       toast.error(
         err.response?.data?.message ??
           "Failed to load quiz"
       );
+
     } finally {
+
       setLoading(false);
+
     }
   };
 
@@ -116,23 +130,25 @@ export default function StudentQuiz({
   };
 
   const handleSubmit = async () => {
+
     if (!quiz) return;
 
     try {
+
       setLoading(true);
 
-const payload = {
-  attemptId,
-  answers: quiz.questions.map((q) => ({
-    question_id: q.id,
-    selected_option:
-      (answers[q.id] as
-        | "A"
-        | "B"
-        | "C"
-        | "D") ?? null,
-  })),
-};
+      const payload = {
+        attemptId,
+        answers: quiz.questions.map((q) => ({
+          question_id: q.id,
+          selected_option:
+            (answers[q.id] as
+              | "A"
+              | "B"
+              | "C"
+              | "D") ?? null,
+        })),
+      };
 
       const res = await submitQuiz(
         quiz.id,
@@ -142,34 +158,61 @@ const payload = {
       setResult(res.result);
       setSubmitted(true);
 
-      toast.success("Quiz submitted successfully");
+      toast.success(
+        "Quiz submitted successfully"
+      );
+
     } catch (err: any) {
+
       console.error(err);
 
       toast.error(
         err.response?.data?.message ??
           "Failed to submit quiz"
       );
+
     } finally {
+
       setLoading(false);
+
     }
+
   };
-    if (loading) {
+
+  if (loading) {
     return (
-      <div className="flex justify-center items-center h-[60vh]">
-        <p className="text-lg font-medium">
-          Loading Quiz...
-        </p>
+      <div className="flex min-h-[70vh] items-center justify-center">
+
+        <div className="rounded-3xl border border-slate-800 bg-slate-900 px-10 py-8 shadow-2xl">
+
+          <div className="flex flex-col items-center gap-6">
+
+            <div className="flex h-16 w-16 animate-spin items-center justify-center rounded-full border-4 border-indigo-600 border-t-transparent" />
+
+            <h2 className="text-xl font-semibold text-white">
+              Loading Quiz...
+            </h2>
+
+          </div>
+
+        </div>
+
       </div>
     );
   }
 
   if (!quiz) {
     return (
-      <div className="text-center py-20">
-        <h2 className="text-2xl font-bold">
-          Quiz not found
-        </h2>
+      <div className="flex min-h-[70vh] items-center justify-center">
+
+        <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-10 text-center">
+
+          <h2 className="text-3xl font-bold text-red-400">
+            Quiz not found
+          </h2>
+
+        </div>
+
       </div>
     );
   }
@@ -183,82 +226,226 @@ const payload = {
     );
   }
 
+  const answeredQuestions = Object.keys(answers).length;
+
+  const progress =
+    (answeredQuestions /
+      quiz.questions.length) *
+    100;
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
-      <div className="lg:col-span-3 space-y-6">
+    <div className="grid gap-8 lg:grid-cols-4">
 
-        <div className="rounded-xl border bg-card p-6">
+      <div className="space-y-6 lg:col-span-3">
 
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        {/* Hero */}
 
-            <div>
-              <h1 className="text-3xl font-bold">
-                {quiz.title}
-              </h1>
+        <div className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900 shadow-2xl">
 
-              <p className="text-muted-foreground mt-2">
-                {quiz.description}
-              </p>
+          <div className="bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-700 p-8">
+
+            <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+
+              <div>
+
+                <div className="mb-3 flex items-center gap-2 text-indigo-100">
+
+                  <Brain className="h-5 w-5" />
+
+                  <span className="font-medium">
+                    Quiz in Progress
+                  </span>
+
+                </div>
+
+                <h1 className="text-4xl font-bold text-white">
+                  {quiz.title}
+                </h1>
+
+                <p className="mt-3 max-w-2xl text-indigo-100">
+                  {quiz.description}
+                </p>
+
+              </div>
+
+              <QuizTimer
+                minutes={quiz.time_limit}
+                onTimeUp={handleSubmit}
+              />
+
             </div>
 
-            <QuizTimer
-              minutes={quiz.time_limit}
-              onTimeUp={handleSubmit}
+          </div>
+
+          <div className="space-y-5 p-6">
+
+            <div className="flex items-center justify-between">
+
+              <div className="flex items-center gap-2 text-white">
+
+                <BookOpen className="h-5 w-5 text-indigo-400" />
+
+                <span>
+                  Question {currentQuestion + 1} of{" "}
+                  {quiz.questions.length}
+                </span>
+
+              </div>
+
+              <div className="flex items-center gap-2 rounded-full bg-green-500/10 px-4 py-2 text-green-400">
+
+                <Sparkles className="h-4 w-4" />
+
+                {answeredQuestions} Answered
+
+              </div>
+
+            </div>
+
+            <div className="h-3 overflow-hidden rounded-full bg-slate-800">
+
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 transition-all duration-500"
+                style={{
+                  width: `${progress}%`,
+                }}
+              />
+
+            </div>
+                        {/* Question Card */}
+
+            <QuestionCard
+              question={
+                quiz.questions[currentQuestion]
+              }
+              selectedAnswer={
+                answers[
+                  quiz.questions[currentQuestion].id
+                ] ?? ""
+              }
+              questionNumber={
+                currentQuestion + 1
+              }
+              totalQuestions={
+                quiz.questions.length
+              }
+              onSelectAnswer={
+                handleSelectAnswer
+              }
             />
+
+            {/* Navigation */}
+
+            <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-xl">
+
+              <div className="flex items-center justify-between">
+
+                <Button
+                  variant="outline"
+                  onClick={handlePrevious}
+                  disabled={
+                    currentQuestion === 0
+                  }
+                  className="rounded-xl px-6"
+                >
+                  ← Previous
+                </Button>
+
+                <div className="hidden text-sm text-slate-400 md:block">
+                  Navigate through all questions before submitting.
+                </div>
+
+                {currentQuestion ===
+                quiz.questions.length - 1 ? (
+
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={loading}
+                    className="rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 px-8 transition-all duration-300 hover:scale-105"
+                  >
+                    ✅ Submit Quiz
+                  </Button>
+
+                ) : (
+
+                  <Button
+                    onClick={handleNext}
+                    className="rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 px-8 transition-all duration-300 hover:scale-105"
+                  >
+                    Next →
+                  </Button>
+
+                )}
+
+              </div>
+
+            </div>
 
           </div>
 
         </div>
 
-        <QuestionCard
-          question={
-            quiz.questions[currentQuestion]
-          }
-          selectedAnswer={
-            answers[
-              quiz.questions[currentQuestion].id
-            ] ?? ""
-          }
-          questionNumber={currentQuestion + 1}
-          totalQuestions={
-            quiz.questions.length
-          }
-          onSelectAnswer={
-            handleSelectAnswer
-          }
-        />
-                <div className="flex items-center justify-between">
-
-          <Button
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentQuestion === 0}
-          >
-            Previous
-          </Button>
-
-          {currentQuestion ===
-          quiz.questions.length - 1 ? (
-            <Button
-              onClick={handleSubmit}
-              disabled={loading}
-            >
-              Submit Quiz
-            </Button>
-          ) : (
-            <Button
-              onClick={handleNext}
-            >
-              Next
-            </Button>
-          )}
-
-        </div>
-
       </div>
 
-      <div className="lg:col-span-1">
+      {/* Sidebar */}
+
+      <div className="space-y-6">
+
+        <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-xl">
+
+          <div className="mb-5 flex items-center gap-2">
+
+            <Clock3 className="h-5 w-5 text-indigo-400" />
+
+            <h2 className="text-lg font-bold text-white">
+              Quiz Overview
+            </h2>
+
+          </div>
+
+          <div className="space-y-4">
+
+            <div className="flex items-center justify-between">
+
+              <span className="text-slate-400">
+                Total Questions
+              </span>
+
+              <span className="font-bold text-white">
+                {quiz.questions.length}
+              </span>
+
+            </div>
+
+            <div className="flex items-center justify-between">
+
+              <span className="text-slate-400">
+                Answered
+              </span>
+
+              <span className="font-bold text-green-400">
+                {answeredQuestions}
+              </span>
+
+            </div>
+
+            <div className="flex items-center justify-between">
+
+              <span className="text-slate-400">
+                Remaining
+              </span>
+
+              <span className="font-bold text-orange-400">
+                {quiz.questions.length -
+                  answeredQuestions}
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
 
         <QuizNavigation
           totalQuestions={
@@ -275,5 +462,6 @@ const payload = {
       </div>
 
     </div>
+
   );
 }

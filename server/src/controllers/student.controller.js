@@ -1,4 +1,4 @@
-const db = require("../config/db");
+﻿const db = require("../config/db");
 
 /*
 =================================
@@ -561,6 +561,7 @@ exports.getAttemptQuiz = async (req, res) => {
       SELECT
         id,
         question,
+        question_type,
         option_a,
         option_b,
         option_c,
@@ -583,6 +584,7 @@ exports.getAttemptQuiz = async (req, res) => {
     const formattedQuestions = questions.map((q) => ({
       id: q.id,
       question: q.question,
+      question_type: q.question_type,
       option_a: q.option_a,
       option_b: q.option_b,
       option_c: q.option_c,
@@ -707,7 +709,9 @@ exports.submitQuiz = async (req, res) => {
       `
       SELECT
         id,
+        question_type,
         correct_option,
+        answer,
         marks
       FROM questions
       WHERE quiz_id = ?
@@ -736,16 +740,21 @@ exports.submitQuiz = async (req, res) => {
 
       if (!question) continue;
 
-      const isCorrect =
-        answer.selected_option === question.correct_option;
+      const isDescriptive = question.question_type === "DESCRIPTIVE";
+
+      const isCorrect = isDescriptive
+        ? false
+        : answer.selected_option === question.correct_option;
 
       const marksAwarded = isCorrect ? question.marks : 0;
 
-      if (isCorrect) {
-        score += marksAwarded;
-        correct++;
-      } else {
-        wrong++;
+      if (!isDescriptive) {
+        if (isCorrect) {
+          score += marksAwarded;
+          correct++;
+        } else {
+          wrong++;
+        }
       }
 
       await connection.query(
@@ -755,15 +764,17 @@ exports.submitQuiz = async (req, res) => {
           attempt_id,
           question_id,
           selected_option,
+          answer_text,
           is_correct,
           marks_awarded
         )
-        VALUES (?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?)
         `,
         [
           attempt.id,
           question.id,
-          answer.selected_option || null,
+          isDescriptive ? null : (answer.selected_option || null),
+          isDescriptive ? (answer.answer || null) : null,
           isCorrect,
           marksAwarded,
         ]

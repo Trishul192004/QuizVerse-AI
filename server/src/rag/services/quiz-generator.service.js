@@ -5,15 +5,16 @@ const { saveQuiz } = require("./quiz-db.service");
 
 async function generateQuiz(documentId, config) {
 
-    const {
-        teacherId,
-        classroomId = null,
-        title = "AI Generated Quiz",
-        description = "Generated from uploaded PDF",
-        timeLimit = 30,
-        numberOfQuestions,
-        difficulty,
-    } = config;
+const {
+    teacherId,
+    classroomId = null,
+    title = "AI Generated Quiz",
+    description = "Generated from uploaded PDF",
+    timeLimit = 30,
+    numberOfQuestions,
+    difficulty,
+    questionType,
+} = config;
 
     console.log("\n========== AI QUIZ GENERATION ==========");
     console.log("Document ID:", documentId);
@@ -51,11 +52,11 @@ async function generateQuiz(documentId, config) {
     // Build prompt
     console.log("3. Building prompt...");
 
-    const prompt = buildQuizPrompt(context, {
-        numberOfQuestions,
-        difficulty,
-    });
-
+const prompt = buildQuizPrompt(context, {
+    numberOfQuestions,
+    difficulty,
+    questionType,
+});
     console.log("Prompt Length:", prompt.length);
 
     // Call OpenRouter

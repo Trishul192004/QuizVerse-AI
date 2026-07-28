@@ -1,9 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import AIQuizDialog from "@/components/quiz/AIQuizDialog";
+import { useEffect, useMemo, useState } from "react";
+import {
+  BookOpen,
+  Calendar,
+  GraduationCap,
+  KeyRound,
+  Search,
+  Sparkles,
+  Users,
+} from "lucide-react";
 
+import AIQuizDialog from "@/components/quiz/AIQuizDialog";
 import CreateQuizDialog from "@/components/quiz/CreateQuizDialog";
 
 import {
@@ -33,6 +42,9 @@ export default function ClassroomDetailsPage({
 
   const [loading, setLoading] =
     useState(true);
+
+  const [search, setSearch] =
+    useState("");
 
   const loadData = async () => {
     try {
@@ -64,18 +76,45 @@ export default function ClassroomDetailsPage({
     loadData();
   }, [params]);
 
+  const filteredQuizzes = useMemo(() => {
+    return quizzes.filter((quiz) => {
+      const term = search.toLowerCase();
+
+      return (
+        quiz.title
+          .toLowerCase()
+          .includes(term) ||
+        quiz.description
+          .toLowerCase()
+          .includes(term)
+      );
+    });
+  }, [quizzes, search]);
+
   if (loading) {
     return (
-      <div className="p-8 text-lg">
-        Loading...
+      <div className="flex min-h-[70vh] items-center justify-center">
+        <div className="rounded-3xl border bg-card p-10 shadow-xl">
+          <div className="flex flex-col items-center gap-5">
+            <div className="h-14 w-14 animate-spin rounded-full border-4 border-violet-600 border-t-transparent" />
+
+            <h2 className="text-xl font-semibold">
+              Loading Classroom...
+            </h2>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!classroom) {
     return (
-      <div className="p-8 text-lg">
-        Classroom not found.
+      <div className="flex min-h-[70vh] items-center justify-center">
+        <div className="rounded-3xl border border-red-500/20 bg-red-500/5 p-10">
+          <h2 className="text-2xl font-bold text-red-500">
+            Classroom not found
+          </h2>
+        </div>
       </div>
     );
   }
@@ -83,59 +122,149 @@ export default function ClassroomDetailsPage({
   return (
     <div className="space-y-8 p-8">
 
-      {/* Header */}
+      {/* Hero */}
 
-      <div>
+      <div className="overflow-hidden rounded-3xl border bg-card shadow-xl">
 
-        <h1 className="text-4xl font-bold">
-          {classroom.name}
-        </h1>
+        <div className="bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-700 p-8">
 
-        <p className="mt-2 text-slate-500">
-          Manage quizzes for this classroom
-        </p>
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+
+            <div>
+
+              <div className="mb-3 flex items-center gap-2 text-indigo-100">
+
+                <GraduationCap className="h-5 w-5" />
+
+                <span className="font-medium">
+                  Teacher Classroom
+                </span>
+
+              </div>
+
+              <h1 className="text-4xl font-bold text-white">
+                {classroom.name}
+              </h1>
+
+              <p className="mt-3 text-indigo-100">
+                Manage quizzes, monitor
+                classroom activity, and
+                create engaging assessments.
+              </p>
+
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+
+              <CreateQuizDialog
+                classroomId={classroomId}
+                onSuccess={loadData}
+              />
+
+              <AIQuizDialog
+                classroomId={classroomId}
+                onSuccess={loadData}
+              />
+
+            </div>
+
+          </div>
+
+        </div>
 
       </div>
 
       {/* Statistics */}
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
 
-        <div className="rounded-xl border p-6">
+        <div className="rounded-2xl border bg-card p-6 shadow-sm">
 
-          <p className="text-sm text-slate-500">
-            Join Code
-          </p>
+          <div className="flex items-center justify-between">
 
-          <h2 className="mt-2 text-2xl font-bold">
-            {classroom.join_code}
-          </h2>
+            <div>
 
-        </div>
+              <p className="text-sm text-muted-foreground">
+                Join Code
+              </p>
 
-        <div className="rounded-xl border p-6">
+              <h2 className="mt-2 text-2xl font-bold">
+                {classroom.join_code}
+              </h2>
 
-          <p className="text-sm text-slate-500">
-            Students
-          </p>
+            </div>
 
-          <h2 className="mt-2 text-2xl font-bold">
-            {classroom.students}
-          </h2>
+            <KeyRound className="h-8 w-8 text-violet-500" />
+
+          </div>
 
         </div>
 
-        <div className="rounded-xl border p-6">
+        <div className="rounded-2xl border bg-card p-6 shadow-sm">
 
-          <p className="text-sm text-slate-500">
-            Created
-          </p>
+          <div className="flex items-center justify-between">
 
-          <h2 className="mt-2 text-xl font-semibold">
-            {new Date(
-              classroom.created_at
-            ).toLocaleDateString()}
-          </h2>
+            <div>
+
+              <p className="text-sm text-muted-foreground">
+                Students
+              </p>
+
+              <h2 className="mt-2 text-2xl font-bold">
+                {classroom.students}
+              </h2>
+
+            </div>
+
+            <Users className="h-8 w-8 text-blue-500" />
+
+          </div>
+
+        </div>
+
+        <div className="rounded-2xl border bg-card p-6 shadow-sm">
+
+          <div className="flex items-center justify-between">
+
+            <div>
+
+              <p className="text-sm text-muted-foreground">
+                Total Quizzes
+              </p>
+
+              <h2 className="mt-2 text-2xl font-bold">
+                {quizzes.length}
+              </h2>
+
+            </div>
+
+            <BookOpen className="h-8 w-8 text-green-500" />
+
+          </div>
+
+        </div>
+
+        <div className="rounded-2xl border bg-card p-6 shadow-sm">
+
+          <div className="flex items-center justify-between">
+
+            <div>
+
+              <p className="text-sm text-muted-foreground">
+                Created
+              </p>
+
+              <h2 className="mt-2 text-lg font-semibold">
+                {new Date(
+                  classroom.created_at
+                ).toLocaleDateString()}
+              </h2>
+
+            </div>
+
+            <Calendar className="h-8 w-8 text-orange-500" />
+
+          </div>
 
         </div>
 
@@ -143,51 +272,84 @@ export default function ClassroomDetailsPage({
 
       {/* Quiz Header */}
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
 
-        <h2 className="text-3xl font-bold">
-          Quizzes
-        </h2>
+        <div>
 
-        <div className="flex gap-2">
+          <h2 className="text-3xl font-bold">
+            Quizzes
+          </h2>
 
-      <div className="flex gap-2">
-        <CreateQuizDialog
-        classroomId={classroomId}
-        onSuccess={loadData}
-        />  
+          <p className="mt-1 text-muted-foreground">
+            Showing{" "}
+            <span className="font-semibold">
+              {filteredQuizzes.length}
+            </span>
 
+            {filteredQuizzes.length !==
+            quizzes.length
+              ? ` of ${quizzes.length}`
+              : ""}{" "}
 
-    </div>
+            quizzes
+          </p>
 
-      <AIQuizDialog classroomId={classroomId} onSuccess={loadData} />
+        </div>
+
+        <div className="relative w-full lg:w-96">
+
+          <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+
+          <input
+            type="text"
+            placeholder="Search quizzes..."
+            value={search}
+            onChange={(e) =>
+              setSearch(e.target.value)
+            }
+            className="w-full rounded-xl border bg-background py-3 pl-12 pr-4 outline-none transition focus:border-violet-500"
+          />
+
+        </div>
 
       </div>
+            {/* Quiz List */}
 
-      </div>
+      {filteredQuizzes.length === 0 ? (
 
-      {/* Quiz List */}
+        <div className="rounded-3xl border border-dashed bg-card p-16">
 
-      {quizzes.length === 0 ? (
+          <div className="mx-auto max-w-md text-center">
 
-        <div
-          className="
-            rounded-xl
-            border
-            border-dashed
-            p-10
-            text-center
-            text-slate-500
-          "
-        >
-          No quizzes created yet.
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-violet-100 dark:bg-violet-900/20">
+
+              <Sparkles className="h-10 w-10 text-violet-600" />
+
+            </div>
+
+            <h3 className="mt-6 text-2xl font-bold">
+              {search
+                ? "No matching quizzes"
+                : "No quizzes yet"}
+            </h3>
+
+            <p className="mt-3 text-muted-foreground">
+
+              {search
+                ? "Try searching with another keyword."
+                : "Create your first quiz or generate one using AI."}
+
+            </p>
+
+          </div>
+
         </div>
 
       ) : (
 
-        <div className="space-y-4">
+        <div className="grid gap-6">
 
-          {quizzes.map((quiz) => (
+          {filteredQuizzes.map((quiz) => (
 
             <Link
               key={quiz.id}
@@ -196,48 +358,78 @@ export default function ClassroomDetailsPage({
 
               <div
                 className="
-                  cursor-pointer
-                  rounded-xl
+                  group
+                  rounded-3xl
                   border
+                  bg-card
                   p-6
+                  shadow-sm
                   transition-all
+                  duration-300
+                  hover:-translate-y-1
                   hover:border-violet-500
-                  hover:shadow-lg
+                  hover:shadow-xl
                 "
               >
 
-                <div className="flex items-start justify-between">
+                <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
 
-                  <div>
+                  <div className="flex-1">
 
-                    <h3 className="text-xl font-bold">
+                    <div className="mb-3 flex flex-wrap items-center gap-3">
+
+                      <div className="rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700 dark:bg-violet-900/20 dark:text-violet-300">
+
+                        Quiz
+
+                      </div>
+
+                      <div className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
+
+                        Active
+
+                      </div>
+
+                    </div>
+
+                    <h3 className="text-2xl font-bold transition-colors group-hover:text-violet-600">
+
                       {quiz.title}
+
                     </h3>
 
-                    <p className="mt-2 text-slate-600">
+                    <p className="mt-3 max-w-3xl text-muted-foreground">
+
                       {quiz.description}
+
                     </p>
 
                   </div>
 
                 </div>
 
-                <div className="mt-5 flex flex-wrap gap-6 text-sm">
+                <div className="mt-8 flex flex-wrap gap-3">
 
-                  <span>
+                  <div className="rounded-xl bg-muted px-4 py-2 text-sm font-medium">
+
                     ⏱ {quiz.time_limit} mins
-                  </span>
 
-                  <span>
+                  </div>
+
+                  <div className="rounded-xl bg-muted px-4 py-2 text-sm font-medium">
+
                     📝 {quiz.total_marks} Marks
-                  </span>
 
-                  <span>
+                  </div>
+
+                  <div className="rounded-xl bg-muted px-4 py-2 text-sm font-medium">
+
                     📅{" "}
                     {new Date(
                       quiz.created_at
                     ).toLocaleDateString()}
-                  </span>
+
+                  </div>
 
                 </div>
 

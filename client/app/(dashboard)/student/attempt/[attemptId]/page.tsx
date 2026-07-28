@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -119,8 +119,24 @@ import {
 
     if (!question) return;
 
-    const listener = (e: KeyboardEvent) => {
-      if (submitting) return;
+const listener = (e: KeyboardEvent) => {
+    if (submitting) return;
+
+    if (question.question_type === "DESCRIPTIVE") {
+        switch (e.key.toLowerCase()) {
+            case "arrowleft":
+                setCurrentQuestion((prev) => Math.max(prev - 1, 0));
+                break;
+
+            case "arrowright":
+                setCurrentQuestion((prev) =>
+                    Math.min(prev + 1, questions.length - 1)
+                );
+                break;
+        }
+        return;
+    }
+
 
       switch (e.key.toLowerCase()) {
         case "a":
@@ -188,18 +204,29 @@ import {
       .padStart(2, "0")}`;
     }, [secondsLeft]);
 
-  const handleAnswerSelect = (
-    questionId: number,
-    option: string
-    ) => {
-    if (submitting) return;
+const handleAnswerSelect = (
+  questionId: number,
+  option: string
+) => {
+  if (submitting) return;
 
-    setAnswers((prev) => ({
-      ...prev,
-      [questionId]: option,
-      }));
-  };
+  setAnswers((prev) => ({
+    ...prev,
+    [questionId]: option,
+  }));
+};
 
+const handleTextAnswer = (
+  questionId: number,
+  value: string
+) => {
+  if (submitting) return;
+
+  setAnswers((prev) => ({
+    ...prev,
+    [questionId]: value,
+  }));
+};
   /*
   =====================================
   SUBMIT QUIZ
@@ -226,11 +253,19 @@ import {
     setShowSubmitDialog(false);
 
     try {
-      const payload = questions.map((question) => ({
-        question_id: question.id,
-        selected_option:
-          answers[question.id] ?? "",
-      }));
+const payload = questions.map((question) => {
+  if (question.question_type === "DESCRIPTIVE") {
+    return {
+      question_id: question.id,
+      answer: answers[question.id] ?? "",
+    };
+  }
+
+  return {
+    question_id: question.id,
+    selected_option: answers[question.id] ?? "",
+  };
+});
 
       const response = await submitQuiz(
         attemptId,
@@ -458,56 +493,68 @@ return (
 
         </div>
 
-        <div className="grid gap-5">
+     <div className="grid gap-5">
 
-          {[
-            ["A", question.option_a],
-            ["B", question.option_b],
-            ["C", question.option_c],
-            ["D", question.option_d],
-          ].map(([key, value]) => (
+  {question.question_type === "DESCRIPTIVE" ? (
 
-            <button
-              key={key}
-              disabled={submitting}
-              onClick={() =>
-                handleAnswerSelect(
-                  question.id,
-                  key
-                )
-              }
-              className={`rounded-xl border p-5 text-left transition-all duration-200
+              <textarea
+                value={answers[question.id] ?? ""}
+                onChange={(e) =>
+                  handleTextAnswer(question.id, e.target.value)
+                }
+                disabled={submitting}
+                rows={8}
+                placeholder="Write your answer here..."
+                className="w-full rounded-xl border border-slate-700 bg-slate-800 p-4 text-white outline-none focus:border-violet-500"
+              />
 
-              ${
-                answers[question.id] === key
-                  ? "border-violet-500 bg-violet-700 text-white shadow-lg"
-                  : "border-slate-700 bg-slate-800 text-slate-200 hover:border-violet-500 hover:bg-slate-700"
-              }
+            ) : (
 
-              ${
-                submitting
-                  ? "cursor-not-allowed opacity-60"
-                  : ""
-              }
-            `}
-            >
+              <>
+                {[
+                  ["A", question.option_a],
+                  ["B", question.option_b],
+                  ["C", question.option_c],
+                  ["D", question.option_d],
+                ].map(([key, value]) => (
 
-              <span className="mr-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-700 font-bold">
+                  <button
+                    key={key}
+                    disabled={submitting}
+                    onClick={() =>
+                      handleAnswerSelect(question.id, key as string)
+                    }
+                    className={`rounded-xl border p-5 text-left transition-all duration-200
 
-                {key}
+                    ${
+                      answers[question.id] === key
+                        ? "border-violet-500 bg-violet-700 text-white shadow-lg"
+                        : "border-slate-700 bg-slate-800 text-slate-200 hover:border-violet-500 hover:bg-slate-700"
+                    }
 
-              </span>
+                    ${
+                      submitting
+                        ? "cursor-not-allowed opacity-60"
+                        : ""
+                    }
+                    `}
+                  >
+                    <span className="mr-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-700 font-bold">
+                      {key}
+                    </span>
 
-              {value}
+                    {value}
+                  </button>
 
-            </button>
+                ))}
+              </>
 
-          ))}
+            )}
 
+          </div>
+
+       
         </div>
-
-       </div>
-
 
              {/* Navigation */}
 
@@ -700,4 +747,5 @@ return (
 
   </>
 );
+
 }

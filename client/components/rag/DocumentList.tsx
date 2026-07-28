@@ -17,7 +17,7 @@ interface Document {
 interface DocumentListProps {
   refreshKey?: number;
   selectedDocumentId?: number | null;
-  onSelectDocument?: (documentId: number) => void;
+  onSelectDocument?: (document: Document) => void;
 }
 
 export default function DocumentList({
@@ -39,20 +39,22 @@ export default function DocumentList({
 
       setDocuments(response.documents);
 
-      // Auto-select the first document if nothing is selected
+      // Auto-select first document
       if (
         response.documents.length > 0 &&
         !selectedDocumentId &&
         onSelectDocument
       ) {
-        onSelectDocument(response.documents[0].id);
+
+        onSelectDocument(response.documents[0]);
+
       }
 
     } catch (error: any) {
 
       toast.error(
         error?.response?.data?.message ??
-        "Failed to load documents."
+          "Failed to load documents."
       );
 
     } finally {
@@ -86,14 +88,16 @@ export default function DocumentList({
         updatedDocuments.length > 0 &&
         onSelectDocument
       ) {
-        onSelectDocument(updatedDocuments[0].id);
+
+        onSelectDocument(updatedDocuments[0]);
+
       }
 
     } catch (error: any) {
 
       toast.error(
         error?.response?.data?.message ??
-        "Delete failed."
+          "Delete failed."
       );
 
     }
@@ -133,13 +137,15 @@ export default function DocumentList({
               type="radio"
               checked={selectedDocumentId === doc.id}
               onChange={() =>
-                onSelectDocument?.(doc.id)
+                onSelectDocument?.(doc)
               }
             />
 
             <FileText className="h-5 w-5 text-red-500" />
 
-            <span>{doc.filename}</span>
+            <span className="font-medium">
+              {doc.filename}
+            </span>
 
           </div>
 

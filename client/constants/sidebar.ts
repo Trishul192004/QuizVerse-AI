@@ -1,8 +1,7 @@
 import {
   LayoutDashboard,
   GraduationCap,
-  BrainCircuit,
-  BookOpen,
+    BookOpen,
   Users,
   Settings,
   ShieldCheck,
@@ -28,11 +27,7 @@ export const sidebarItems: SidebarSection[] = [
         href: "/teacher/classrooms",
         icon: GraduationCap,
       },
-      {
-        title: "AI Quiz",
-        href: "/teacher/ai",
-        icon: BrainCircuit,
-      },
+
       {
         title: "Battle Arena",
         href: "/battle",
@@ -108,4 +103,4 @@ export const sidebarItems: SidebarSection[] = [
       },
     ],
   },
-];
+];  

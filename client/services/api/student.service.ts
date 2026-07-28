@@ -26,11 +26,18 @@ export interface StudentClassroomsResponse {
 
 export interface QuizQuestion {
   id: number;
+
   question: string;
-  option_a: string;
-  option_b: string;
-  option_c: string;
-  option_d: string;
+
+  question_type: "MCQ" | "DESCRIPTIVE";
+
+  option_a: string | null;
+  option_b: string | null;
+  option_c: string | null;
+  option_d: string | null;
+
+  answer: string | null;
+
   marks: number;
 }
 
@@ -135,7 +142,8 @@ export const submitQuiz = async (
   attemptId: number,
   answers: {
     question_id: number;
-    selected_option: string;
+    selected_option?: string | null;
+    answer?: string | null;
   }[]
 ) => {
   const response = await api.post(
@@ -148,13 +156,18 @@ export const submitQuiz = async (
   return response.data;
 };
 
+/*
+========================================
+LEADERBOARD
+========================================
+*/
+
 export const getLeaderboard = async () => {
   const response = await api.get("/student/leaderboard");
 
   return response.data;
 };
 
- 
 /*
 ========================================
 GET AI STUDY QUIZZES

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-
+import BattleResultCard from "@/components/battle/BattleResultCard";
 import {
   getBattleLeaderboard,
   getBattleRoom,
@@ -38,10 +38,12 @@ export default function BattleResultPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <h2 className="text-xl font-semibold">
-          Loading Results...
-        </h2>
+      <div className="flex min-h-screen items-center justify-center bg-slate-950">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900 px-8 py-6 shadow-xl">
+          <h2 className="text-xl font-semibold text-white">
+            Loading Results...
+          </h2>
+        </div>
       </div>
     );
   }
@@ -49,86 +51,13 @@ export default function BattleResultPage() {
   const winner = leaderboard[0];
 
   return (
-    <div className="max-w-5xl mx-auto p-8 space-y-8">
-
-      <div className="border rounded-lg p-8 text-center shadow">
-
-        <h1 className="text-4xl font-bold mb-6">
-          🎉 Battle Finished
-        </h1>
-
-        <p className="text-lg">
-          Room Code
-        </p>
-
-        <p className="text-2xl font-bold mb-4">
-          {roomCode}
-        </p>
-
-        {winner && (
-          <>
-            <h2 className="text-2xl font-semibold">
-              🏆 Winner
-            </h2>
-
-            <p className="text-3xl font-bold text-green-600 mt-2">
-              {winner.username}
-            </p>
-
-            <p className="text-xl mt-2">
-              {winner.score} Points
-            </p>
-          </>
-        )}
-
-      </div>
-
-      <div className="border rounded-lg p-6 shadow">
-
-        <h2 className="text-2xl font-bold mb-6">
-          Final Leaderboard
-        </h2>
-
-        {leaderboard.map((player: any, index: number) => (
-
-          <div
-            key={player.id}
-            className="flex justify-between border-b py-4"
-          >
-
-            <div>
-
-              <span className="font-bold mr-2">
-                #{index + 1}
-              </span>
-
-              <span>
-                {player.username}
-              </span>
-
-            </div>
-
-            <div className="font-semibold">
-              {player.score} pts
-            </div>
-
-          </div>
-
-        ))}
-
-      </div>
-
-      <div className="flex justify-center">
-
-        <button
-          onClick={() => router.push("/battle")}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg"
-        >
-          Back to Battles
-        </button>
-
-      </div>
-
+    <div className="min-h-screen bg-slate-950 py-10">
+      <BattleResultCard
+        roomCode={roomCode}
+        winner={winner}
+        leaderboard={leaderboard}
+        onBack={() => router.push("/battle")}
+      />
     </div>
   );
 }
