@@ -1,0 +1,33 @@
+JWT Error: JsonWebTokenError: jwt malformed
+    at module.exports [as verify] (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\node_modules\jsonwebtoken\verify.js:70:17)
+    at verifyToken (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\src\middleware\auth.middleware.js:26:25)
+    at Layer.handleRequest (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\node_modules\router\lib\layer.js:152:17)
+    at next (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\node_modules\router\lib\route.js:117:3)
+    at handle (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\node_modules\router\lib\layer.js:152:17)
+    at D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\node_modules\router\index.js:295:15
+    at processParams (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\node_modules\router\index.js:582:12)
+    at next (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\node_modules\router\index.js:291:5)
+REFRESH TOKEN ERROR: JsonWebTokenError: jwt malformed
+    at module.exports [as verify] (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\node_modules\jsonwebtoken\verify.js:70:17)
+    at refreshAccessToken (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\src\controllers\auth.controller.js:291:11)
+    at Layer.handleRequest (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\node_modules\router\lib\layer.js:152:17)
+    at next (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\node_modules\router\lib\route.js:117:3)
+    at handle (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\node_modules\router\lib\layer.js:152:17)
+    at D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\node_modules\router\index.js:295:15
+    at processParams (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\node_modules\router\index.js:582:12)
+    at next (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\node_modules\router\index.js:291:5)
+Error: Question is required
+    at Object.askQuestion (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\src\rag\services\rag.service.js:171:15)
+    at askQuestion (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\src\rag\controllers\rag.controller.js:63:41)
+    at Layer.handleRequest (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\node_modules\router\lib\layer.js:152:17)
+    at next (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\node_modules\router\lib\route.js:157:13)
+    at verifyToken (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\src\middleware\auth.middleware.js:44:5)
+    at Layer.handleRequest (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\node_modules\router\lib\layer.js:152:17)
+    at next (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\node_modules\router\lib\route.js:117:3)
+    at handle (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (D:\C_DRIVE\RESUME PROJECTS\final_projects_certificates\QuizVerse AI\server\node_modules\router\lib\layer.js:152:17)

@@ -16,11 +16,15 @@ router.get("/test", (req, res) => {
 
 router.get(
   "/quizzes/:quizId/analytics",
+  verifyToken,
+  authorizeRoles("teacher"),
   teacherController.getQuizAnalytics
 );
 
 router.get(
   "/attempts/:attemptId",
+  verifyToken,
+  authorizeRoles("teacher"),
   teacherController.getAttemptDetails
 );
 

@@ -20,7 +20,6 @@ async function generateResponse(messages) {
     }
 
 
-    console.log("API KEY:", process.env.OPENROUTER_API_KEY);
     console.log("MODEL:", process.env.AI_MODEL);
 
     const response = await axios.post(

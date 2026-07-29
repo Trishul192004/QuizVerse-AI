@@ -6,6 +6,8 @@ const {
   generateBattleQuiz,
 } = require("../controllers/battleAI.controller");
 
-router.post("/generate", generateBattleQuiz);
+const { verifyToken } = require("../middleware/auth.middleware");
+
+router.post("/generate", verifyToken, generateBattleQuiz);
 
 module.exports = router;

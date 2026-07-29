@@ -1,0 +1,223 @@
+◇ injected env (12) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+◇ injected env (0) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+Battle Service: {
+  createBattle: [AsyncFunction: createBattle],
+  joinBattle: [AsyncFunction: joinBattle],
+  getBattleRoom: [AsyncFunction: getBattleRoom],
+  getBattlePlayers: [AsyncFunction: getBattlePlayers],
+  startBattle: [AsyncFunction: startBattle],
+  getBattleQuestions: [AsyncFunction: getBattleQuestions],
+  submitBattleAnswer: [AsyncFunction: submitBattleAnswer],
+  getBattleLeaderboard: [AsyncFunction: getBattleLeaderboard]
+}
+>>> LOADED RAG SERVICE <<<
+generateQuiz: function
+Exporting: {
+  uploadDocument: 'function',
+  getDocuments: 'function',
+  deleteDocument: 'function',
+  askQuestion: 'function',
+  generateQuizFromDocument: 'function'
+}
+verifyToken: function
+upload: object
+upload.single: function
+uploadMiddleware: function
+uploadDocument: function
+generateQuizFromDocument: function
+🚀 Server running on port 5000
+========== LOGIN ==========
+Login Email: trishul@gmail.com
+DB User: {
+  id: 1,
+  username: 'Trishul',
+  email: 'trishul@gmail.com',
+  role: 'teacher'
+}
+===========================
+=================================
+Generating Access Token
+JWT_SECRET: Loaded ✅
+JWT_EXPIRES_IN: 15d
+=================================
+Generating Refresh Token
+REFRESH_SECRET: Loaded ✅
+REFRESH_EXPIRES_IN: 7d
+Creating JWT for user: 1 trishul@gmail.com
+========== LOGIN ==========
+Login Email: sai2@gmail.com
+DB User: { id: 4, username: 'sai2', email: 'sai2@gmail.com', role: 'student' }
+===========================
+=================================
+Generating Access Token
+JWT_SECRET: Loaded ✅
+JWT_EXPIRES_IN: 15d
+=================================
+Generating Refresh Token
+REFRESH_SECRET: Loaded ✅
+REFRESH_EXPIRES_IN: 7d
+Creating JWT for user: 4 sai2@gmail.com
+========== LOGIN ==========
+Login Email: trishul@gmail.com
+DB User: {
+  id: 1,
+  username: 'Trishul',
+  email: 'trishul@gmail.com',
+  role: 'teacher'
+}
+===========================
+=================================
+Generating Access Token
+JWT_SECRET: Loaded ✅
+JWT_EXPIRES_IN: 15d
+=================================
+
+========== ROLE MIDDLEWARE ==========
+
+========== ROLE MIDDLEWARE ==========
+
+========== ROLE MIDDLEWARE ==========
+
+========== ROLE MIDDLEWARE ==========
+
+========== ROLE MIDDLEWARE ==========
+
+========== ROLE MIDDLEWARE ==========
+
+========== ROLE MIDDLEWARE ==========
+
+========== ROLE MIDDLEWARE ==========
+
+========== ROLE MIDDLEWARE ==========
+
+========== ROLE MIDDLEWARE ==========
+
+========== ROLE MIDDLEWARE ==========
+
+========== ROLE MIDDLEWARE ==========
+
+========== ROLE MIDDLEWARE ==========
+
+========== ROLE MIDDLEWARE ==========
+
+========== ROLE MIDDLEWARE ==========
+
+========== ROLE MIDDLEWARE ==========
+
+========== ROLE MIDDLEWARE ==========
+
+========== ROLE MIDDLEWARE ==========
+
+========== ROLE MIDDLEWARE ==========
+
+========== CREATE QUESTION ==========
+Headers:
+{
+  'content-type': 'application/json',
+  authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJ0cmlzaHVsQGdtYWlsLmNvbSIsInJvbGUiOiJ0ZWFjaGVyIiwiaWF0IjoxNzg1MzEwNjM5LCJleHAiOjE3ODY2MDY2Mzl9.F0Q8dnAhvWtwTThbVu-2MKU1wUrOk6oAGVKF33WiikY',
+  host: 'localhost:5000',
+  connection: 'keep-alive',
+  'transfer-encoding': 'chunked'
+}
+
+Body:
+{
+  quiz_id: 102,
+  question: 'What is 2+2?',
+  option_a: '3',
+  option_b: '4',
+  option_c: '5',
+  option_d: '6',
+  correct_option: 'B',
+  marks: 5
+}
+=====================================
+
+
+========== ROLE MIDDLEWARE ==========
+
+========== CREATE QUESTION ==========
+Headers:
+{
+  'content-type': 'application/json',
+  authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJ0cmlzaHVsQGdtYWlsLmNvbSIsInJvbGUiOiJ0ZWFjaGVyIiwiaWF0IjoxNzg1MzEwNjM5LCJleHAiOjE3ODY2MDY2Mzl9.F0Q8dnAhvWtwTThbVu-2MKU1wUrOk6oAGVKF33WiikY',
+  host: 'localhost:5000',
+  connection: 'keep-alive',
+  'transfer-encoding': 'chunked'
+}
+
+Body:
+{ quiz_id: 102, question: 'Test?' }
+=====================================
+
+
+========== ROLE MIDDLEWARE ==========
+
+========== CREATE QUESTION ==========
+Headers:
+{
+  'content-type': 'application/json',
+  authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJ0cmlzaHVsQGdtYWlsLmNvbSIsInJvbGUiOiJ0ZWFjaGVyIiwiaWF0IjoxNzg1MzEwNjM5LCJleHAiOjE3ODY2MDY2Mzl9.F0Q8dnAhvWtwTThbVu-2MKU1wUrOk6oAGVKF33WiikY',
+  host: 'localhost:5000',
+  connection: 'keep-alive',
+  'transfer-encoding': 'chunked'
+}
+
+Body:
+{
+  quiz_id: 102,
+  question: 'Q?',
+  option_a: '1',
+  option_b: '2',
+  option_c: '3',
+  option_d: '4',
+  correct_option: 'E'
+}
+=====================================
+
+
+========== ROLE MIDDLEWARE ==========
+updateQuestion reached. params: [Object: null prototype] { id: '370' } user: {
+  id: 1,
+  email: 'trishul@gmail.com',
+  role: 'teacher',
+  iat: 1785310639,
+  exp: 1786606639
+}
+updateQuestion body: {
+  question: 'Updated: What is 2+2?',
+  option_a: '3',
+  option_b: '4',
+  option_c: '5',
+  option_d: '6',
+  correct_option: 'B',
+  marks: 5
+}
+
+========== ROLE MIDDLEWARE ==========
+
+========== ROLE MIDDLEWARE ==========
+
+========== ROLE MIDDLEWARE ==========
+
+========== ROLE MIDDLEWARE ==========
+
+========== ROLE MIDDLEWARE ==========
+
+========== ROLE MIDDLEWARE ==========
+
+========== ROLE MIDDLEWARE ==========
+START ROUTE HIT
+Body: { roomCode: '8N5WW4' }
+User: {
+  id: 1,
+  email: 'trishul@gmail.com',
+  role: 'teacher',
+  iat: 1785310639,
+  exp: 1786606639
+}
+MODEL: openrouter/free
+
+========== ROLE MIDDLEWARE ==========
+
+========== ROLE MIDDLEWARE ==========
