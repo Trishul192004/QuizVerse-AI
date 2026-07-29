@@ -132,6 +132,7 @@ export default function StudentQuiz({
   const handleSubmit = async () => {
 
     if (!quiz) return;
+    if (attemptId === null) return;
 
     try {
 

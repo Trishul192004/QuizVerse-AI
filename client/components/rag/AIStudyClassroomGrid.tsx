@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { toast } from "sonner";
 
-import AIStudyClassroomCard from "./AIStudyClassroomCard";
+import ClassroomCard from "@/components/classroom/ClassroomCard";
 import {
   getTeacherClassrooms,
   deleteClassroom,

@@ -5,9 +5,21 @@ import {
   Swords,
   BookOpen,
   User,
+  type LucideIcon,
 } from "lucide-react";
 
-export const sidebarItems = [
+export interface SidebarItem {
+  title: string;
+  href: string;
+  icon: LucideIcon;
+}
+
+export interface SidebarSection {
+  role: "teacher" | "student" | "admin";
+  items: SidebarItem[];
+}
+
+export const sidebarItems: SidebarSection[] = [
   {
     role: "teacher",
     items: [
