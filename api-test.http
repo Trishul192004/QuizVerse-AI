@@ -1,0 +1,480 @@
+### ==========================================
+### QUIZVERSE AI — FULL API TEST SUITE
+### Target: Railway Backend
+### Usage: Install "REST Client" VS Code extension,
+### then click "Send Request" above each test
+### ==========================================
+/*
+accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiZW1haWwiOiJzYWkyQGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiaWF0IjoxNzg1NDM5MzQxLCJleHAiOjE3ODY3MzUzNDF9.DWe8asfKeq-4zY5pkEbMSmT-nntxFdEwDfkRVmPnAmM",
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiaWF0IjoxNzg1NDM5MzQxLCJleHAiOjE3ODYwNDQxNDF9.4vHOOYxVfKBZv_RA8oD8oJIG5dtalYBG8-0YqbX5n-Q",
+*/
+//
+//@baseUrl = quizverse-ai-production.up.railway.app
+//@token = {{login.response.body.accessToken}}
+//
+//@refreshToken = {{login.response.body.refreshToken}}
+@baseUrl = quizverse-ai-production.up.railway.app
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiZW1haWwiOiJzYWkyQGdtYWlsLmNvbSIsInJvbGUiOiJzdHVkZW50IiwiaWF0IjoxNzg1NDM5MzQxLCJleHAiOjE3ODY3MzUzNDF9.DWe8asfKeq-4zY5pkEbMSmT-nntxFdEwDfkRVmPnAmM
+@refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiaWF0IjoxNzg1NDM5MzQxLCJleHAiOjE3ODYwNDQxNDF9.4vHOOYxVfKBZv_RA8oD8oJIG5dtalYBG8-0YqbX5n-Q
+
+### ==========================================
+### 1. HEALTH CHECK
+### ==========================================
+
+### 1a. Root health check
+GET {{baseUrl}}/
+Content-Type: application/json
+
+### 1b. Debug route
+POST {{baseUrl}}/debug
+Content-Type: application/json
+
+{ "test": "hello" }
+
+### 1c. Test route
+GET {{baseUrl}}/api/test/
+Content-Type: application/json
+
+### ==========================================
+### 2. AUTH — Register
+### ==========================================
+
+### 2a. Register Teacher
+# @name registerTeacher
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "testteacher",
+  "email": "teacher@test.com",
+  "password": "Password123!",
+  "role": "teacher"
+}
+
+### 2b. Register Student
+# @name registerStudent
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "teststudent",
+  "email": "student@test.com",
+  "password": "Password123!",
+  "role": "student"
+}
+
+### ==========================================
+### 3. AUTH — Login
+### ==========================================
+
+### 3a. Login as Teacher
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "sai2@gmail.com",
+  "password": "sai2@123"
+}
+
+### 3b. Login as Student
+# @name loginStudent
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "student@test.com",
+  "password": "Password123!"
+}
+
+### ==========================================
+### 4. AUTH — Profile & Sessions
+### ==========================================
+
+### 4a. Get current user (uses token from login)
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{token}}
+
+### 4b. Refresh token
+POST {{baseUrl}}/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### 4c. Get active sessions
+GET {{baseUrl}}/api/auth/sessions
+Authorization: Bearer {{token}}
+
+### ==========================================
+### 5. CLASSROOMS (Teacher)
+### ==========================================
+
+### 5a. Create classroom
+# @name createClassroom
+POST {{baseUrl}}/api/classrooms/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Test Class 101",
+  "description": "A test classroom for API testing",
+  "subject": "Computer Science"
+}
+
+### 5b. Get all classrooms
+GET {{baseUrl}}/api/classrooms/
+Authorization: Bearer {{token}}
+
+### 5c. Get classroom by ID (replace :id with actual ID)
+GET {{baseUrl}}/api/classrooms/1
+Authorization: Bearer {{token}}
+
+### 5d. Delete classroom (replace :id with actual ID)
+DELETE {{baseUrl}}/api/classrooms/1
+Authorization: Bearer {{token}}
+
+### ==========================================
+### 6. CLASSROOMS (Student)
+### ==========================================
+
+### 6a. Join classroom (replace CODE with actual code from teacher)
+POST {{baseUrl}}/api/classrooms/join
+Authorization: Bearer {{loginStudent.response.body.accessToken}}
+Content-Type: application/json
+
+{
+  "code": "ABC123"
+}
+
+### 6b. Get student classrooms
+GET {{baseUrl}}/api/classrooms/student
+Authorization: Bearer {{loginStudent.response.body.accessToken}}
+
+### ==========================================
+### 7. STUDENT ROUTES
+### ==========================================
+
+### 7a. Student join classroom (via student route)
+POST {{baseUrl}}/api/student/join-classroom
+Authorization: Bearer {{loginStudent.response.body.accessToken}}
+Content-Type: application/json
+
+{
+  "code": "ABC123"
+}
+
+### 7b. Get student classrooms
+GET {{baseUrl}}/api/student/classrooms
+Authorization: Bearer {{loginStudent.response.body.accessToken}}
+
+### 7c. Get quizzes for a classroom (replace :classroomId)
+GET {{baseUrl}}/api/student/classrooms/1/quizzes
+Authorization: Bearer {{loginStudent.response.body.accessToken}}
+
+### 7d. Get leaderboard
+GET {{baseUrl}}/api/student/leaderboard
+Authorization: Bearer {{loginStudent.response.body.accessToken}}
+
+### ==========================================
+### 8. QUIZZES (Teacher)
+### ==========================================
+
+### 8a. Create quiz
+# @name createQuiz
+POST {{baseUrl}}/api/quizzes/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "classroomId": 1,
+  "title": "JavaScript Basics",
+  "description": "Test your JS knowledge",
+  "questions": [
+    {
+      "questionText": "What is 2+2?",
+      "options": ["3", "4", "5", "6"],
+      "correctAnswer": "4",
+      "marks": 1
+    },
+    {
+      "questionText": "What is typeof [] in JS?",
+      "options": ["array", "object", "undefined", "string"],
+      "correctAnswer": "object",
+      "marks": 1
+    }
+  ]
+}
+
+### 8b. Get all teacher quizzes
+GET {{baseUrl}}/api/quizzes/teacher/all
+Authorization: Bearer {{token}}
+
+### 8c. Get quizzes for a classroom
+GET {{baseUrl}}/api/quizzes/classroom/1
+Authorization: Bearer {{token}}
+
+### 8d. Get quiz by ID (replace :id)
+GET {{baseUrl}}/api/quizzes/1
+Authorization: Bearer {{token}}
+
+### 8e. Publish quiz (replace :id)
+PUT {{baseUrl}}/api/quizzes/1/publish
+Authorization: Bearer {{token}}
+
+### 8f. Update quiz (replace :id)
+PUT {{baseUrl}}/api/quizzes/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "JavaScript Basics - Updated",
+  "description": "Updated description"
+}
+
+### 8g. Delete quiz (replace :id)
+DELETE {{baseUrl}}/api/quizzes/1
+Authorization: Bearer {{token}}
+
+### ==========================================
+### 9. QUESTIONS
+### ==========================================
+
+### 9a. Create question
+POST {{baseUrl}}/api/questions/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "quizId": 1,
+  "questionText": "What does DOM stand for?",
+  "options": ["Document Object Model", "Data Object Model", "Document Orientation Model", "Digital Output Management"],
+  "correctAnswer": "Document Object Model",
+  "marks": 1
+}
+
+### 9b. Get questions for a quiz
+GET {{baseUrl}}/api/questions/quiz/1
+Authorization: Bearer {{token}}
+
+### 9c. Update question (replace :id)
+PUT {{baseUrl}}/api/questions/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "questionText": "What does DOM stand for? (Updated)",
+  "marks": 2
+}
+
+### 9d. Delete question (replace :id)
+DELETE {{baseUrl}}/api/questions/1
+Authorization: Bearer {{token}}
+
+### ==========================================
+### 10. STUDENT — QUIZ ATTEMPT
+### ==========================================
+
+### 10a. Start quiz (replace :quizId)
+POST {{baseUrl}}/api/student/start-quiz/1
+Authorization: Bearer {{loginStudent.response.body.accessToken}}
+
+### 10b. Get attempt (replace :attemptId)
+GET {{baseUrl}}/api/student/attempt/1
+Authorization: Bearer {{loginStudent.response.body.accessToken}}
+
+### 10c. Submit attempt (replace :attemptId)
+POST {{baseUrl}}/api/student/submit/1
+Authorization: Bearer {{loginStudent.response.body.accessToken}}
+Content-Type: application/json
+
+{
+  "answers": [
+    { "questionId": 1, "selectedAnswer": "4" },
+    { "questionId": 2, "selectedAnswer": "object" }
+  ]
+}
+
+### 10d. Get attempt result (replace :attemptId)
+GET {{baseUrl}}/api/student/attempt/1/result
+Authorization: Bearer {{loginStudent.response.body.accessToken}}
+
+### 10e. Review attempt (replace :attemptId)
+GET {{baseUrl}}/api/student/review/1
+Authorization: Bearer {{loginStudent.response.body.accessToken}}
+
+### ==========================================
+### 11. TEACHER
+### ==========================================
+
+### 11a. Teacher test route
+GET {{baseUrl}}/api/teacher/test
+Authorization: Bearer {{token}}
+
+### 11b. Get quiz analytics (replace :quizId)
+GET {{baseUrl}}/api/teacher/quizzes/1/analytics
+Authorization: Bearer {{token}}
+
+### 11c. Get attempt details (replace :attemptId)
+GET {{baseUrl}}/api/teacher/attempts/1
+Authorization: Bearer {{token}}
+
+### ==========================================
+### 12. AI
+### ==========================================
+
+### 12a. AI test
+GET {{baseUrl}}/api/ai/test
+Authorization: Bearer {{token}}
+
+### 12b. Generate quiz via AI
+POST {{baseUrl}}/api/ai/generate-quiz
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "topic": "JavaScript",
+  "difficulty": "medium",
+  "numQuestions": 5
+}
+
+### 12c. Generate quiz preview
+POST {{baseUrl}}/api/ai/generate-quiz-preview
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "topic": "React",
+  "difficulty": "easy"
+}
+
+### ==========================================
+### 13. BATTLE
+### ==========================================
+
+### 13a. Create battle room
+# @name createBattle
+POST {{baseUrl}}/api/battle/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "quizId": 1,
+  "maxPlayers": 4
+}
+
+### 13b. Join battle (replace ROOMCODE)
+POST {{baseUrl}}/api/battle/join
+Authorization: Bearer {{loginStudent.response.body.accessToken}}
+Content-Type: application/json
+
+{
+  "roomCode": "ABCD"
+}
+
+### 13c. Get battle room (replace :roomCode)
+GET {{baseUrl}}/api/battle/ABCD
+Authorization: Bearer {{token}}
+
+### 13d. Get players in room (replace :roomCode)
+GET {{baseUrl}}/api/battle/ABCD/players
+Authorization: Bearer {{token}}
+
+### 13e. Get questions for battle (replace :roomCode)
+GET {{baseUrl}}/api/battle/ABCD/questions
+Authorization: Bearer {{token}}
+
+### 13f. Submit answer (replace :roomCode)
+POST {{baseUrl}}/api/battle/submit-answer
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "roomCode": "ABCD",
+  "questionIndex": 0,
+  "answer": "4",
+  "timeTaken": 5.2
+}
+
+### 13g. Get leaderboard (replace :roomCode)
+GET {{baseUrl}}/api/battle/ABCD/leaderboard
+Authorization: Bearer {{token}}
+
+### 13h. Start battle (replace :roomCode)
+POST {{baseUrl}}/api/battle/start
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "roomCode": "ABCD"
+}
+
+### ==========================================
+### 14. BATTLE AI
+### ==========================================
+
+### 14a. Generate battle AI questions
+POST {{baseUrl}}/api/battle-ai/generate
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "topic": "General Knowledge",
+  "difficulty": "medium",
+  "numQuestions": 5
+}
+
+### ==========================================
+### 15. RAG (Document Q&A)
+### ==========================================
+
+### 15a. Upload document (use form-data in Postman)
+POST {{baseUrl}}/api/rag/upload
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data
+
+### 15b. Get all documents
+GET {{baseUrl}}/api/rag/documents
+Authorization: Bearer {{token}}
+
+### 15c. Ask a question (replace documentIds)
+POST {{baseUrl}}/api/rag/ask
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "question": "What is the main topic of this document?",
+  "documentIds": [1]
+}
+
+### 15d. Generate quiz from documents
+POST {{baseUrl}}/api/rag/generate-quiz
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "documentIds": [1],
+  "numQuestions": 5
+}
+
+### 15e. Delete document (replace :id)
+DELETE {{baseUrl}}/api/rag/document/1
+Authorization: Bearer {{token}}
+
+### ==========================================
+### 16. AUTH — Logout
+### ==========================================
+
+### 16a. Logout (single session)
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### 16b. Logout all sessions
+POST {{baseUrl}}/api/auth/logout-all
+Authorization: Bearer {{token}}

@@ -1,0 +1,91 @@
+{
+  "baseUrl": "https://quizverse-ai.up.railway.app",
+  "endpoints": {
+    "health": [
+      { "method": "GET", "path": "/", "description": "Health check" },
+      { "method": "POST", "path": "/debug", "description": "Debug - echoes headers and body" }
+    ],
+    "test": [
+      { "method": "GET", "path": "/api/test/", "description": "Test route" }
+    ],
+    "auth": [
+      { "method": "POST", "path": "/api/auth/register", "body": { "username": "string", "email": "string", "password": "string", "role": "teacher|student" } },
+      { "method": "POST", "path": "/api/auth/login", "body": { "email": "string", "password": "string" } },
+      { "method": "POST", "path": "/api/auth/refresh", "body": { "refreshToken": "string" } },
+      { "method": "GET", "path": "/api/auth/me", "auth": true },
+      { "method": "POST", "path": "/api/auth/logout", "auth": true, "body": { "refreshToken": "string" } },
+      { "method": "POST", "path": "/api/auth/logout-all", "auth": true },
+      { "method": "GET", "path": "/api/auth/sessions", "auth": true }
+    ],
+    "classrooms": [
+      { "method": "POST", "path": "/api/classrooms/create", "auth": true, "body": { "name": "string", "description": "string", "subject": "string" } },
+      { "method": "POST", "path": "/api/classrooms/join", "auth": true, "body": { "code": "string" } },
+      { "method": "GET", "path": "/api/classrooms/student", "auth": true },
+      { "method": "GET", "path": "/api/classrooms/", "auth": true },
+      { "method": "GET", "path": "/api/classrooms/:id", "auth": true },
+      { "method": "DELETE", "path": "/api/classrooms/:id", "auth": true }
+    ],
+    "quizzes": [
+      { "method": "POST", "path": "/api/quizzes/save-ai", "auth": true, "body": { "classroomId": "string", "title": "string", "topic": "string", "difficulty": "string", "questions": "array" } },
+      { "method": "POST", "path": "/api/quizzes/create", "auth": true, "body": { "classroomId": "string", "title": "string", "description": "string", "questions": "array" } },
+      { "method": "GET", "path": "/api/quizzes/classroom/:classroomId", "auth": true },
+      { "method": "GET", "path": "/api/quizzes/teacher/all", "auth": true },
+      { "method": "GET", "path": "/api/quizzes/:id", "auth": true },
+      { "method": "PUT", "path": "/api/quizzes/:id", "auth": true },
+      { "method": "PUT", "path": "/api/quizzes/:id/publish", "auth": true },
+      { "method": "DELETE", "path": "/api/quizzes/:id", "auth": true }
+    ],
+    "questions": [
+      { "method": "POST", "path": "/api/questions/create", "auth": true, "body": { "quizId": "string", "questionText": "string", "options": "array", "correctAnswer": "string", "marks": "number" } },
+      { "method": "PUT", "path": "/api/questions/:id", "auth": true },
+      { "method": "DELETE", "path": "/api/questions/:id", "auth": true },
+      { "method": "GET", "path": "/api/questions/quiz/:quizId", "auth": true }
+    ],
+    "student": [
+      { "method": "POST", "path": "/api/student/join-classroom", "auth": true, "body": { "code": "string" } },
+      { "method": "GET", "path": "/api/student/classrooms", "auth": true },
+      { "method": "GET", "path": "/api/student/classrooms/:classroomId/quizzes", "auth": true },
+      { "method": "GET", "path": "/api/student/classrooms/:classroomId/ai-study/quizzes", "auth": true },
+      { "method": "GET", "path": "/api/student/leaderboard", "auth": true },
+      { "method": "POST", "path": "/api/student/start-quiz/:quizId", "auth": true },
+      { "method": "GET", "path": "/api/student/attempt/:attemptId", "auth": true },
+      { "method": "POST", "path": "/api/student/submit/:attemptId", "auth": true, "body": { "answers": "array" } },
+      { "method": "GET", "path": "/api/student/review/:attemptId", "auth": true },
+      { "method": "GET", "path": "/api/student/ai-study/quizzes/:quizId", "auth": true },
+      { "method": "GET", "path": "/api/student/quizzes/:quizId", "auth": true },
+      { "method": "POST", "path": "/api/student/quizzes/:quizId/start", "auth": true },
+      { "method": "GET", "path": "/api/student/attempt/:attemptId/result", "auth": true },
+      { "method": "POST", "path": "/api/student/quizzes/:quizId/submit", "auth": true, "body": { "answers": "array" } }
+    ],
+    "teacher": [
+      { "method": "GET", "path": "/api/teacher/test", "description": "Teacher test route" },
+      { "method": "GET", "path": "/api/teacher/quizzes/:quizId/analytics", "auth": true },
+      { "method": "GET", "path": "/api/teacher/attempts/:attemptId", "auth": true }
+    ],
+    "ai": [
+      { "method": "GET", "path": "/api/ai/test", "description": "AI test route" },
+      { "method": "POST", "path": "/api/ai/generate-quiz", "auth": true, "body": { "topic": "string", "difficulty": "string", "numQuestions": "number" } },
+      { "method": "POST", "path": "/api/ai/generate-quiz-preview", "auth": true, "body": { "topic": "string", "difficulty": "string" } }
+    ],
+    "battle": [
+      { "method": "POST", "path": "/api/battle/create", "auth": true, "body": { "quizId": "string", "maxPlayers": "number" } },
+      { "method": "POST", "path": "/api/battle/join", "auth": true, "body": { "roomCode": "string" } },
+      { "method": "POST", "path": "/api/battle/start", "auth": true, "body": { "roomCode": "string" } },
+      { "method": "POST", "path": "/api/battle/submit-answer", "auth": true, "body": { "roomCode": "string", "questionIndex": "number", "answer": "string", "timeTaken": "number" } },
+      { "method": "GET", "path": "/api/battle/:roomCode", "auth": true },
+      { "method": "GET", "path": "/api/battle/:roomCode/players", "auth": true },
+      { "method": "GET", "path": "/api/battle/:roomCode/questions", "auth": true },
+      { "method": "GET", "path": "/api/battle/:roomCode/leaderboard", "auth": true }
+    ],
+    "battle-ai": [
+      { "method": "POST", "path": "/api/battle-ai/generate", "auth": true, "body": { "topic": "string", "difficulty": "string", "numQuestions": "number" } }
+    ],
+    "rag": [
+      { "method": "POST", "path": "/api/rag/upload", "auth": true, "body": "multipart/form-data file" },
+      { "method": "GET", "path": "/api/rag/documents", "auth": true },
+      { "method": "DELETE", "path": "/api/rag/document/:id", "auth": true },
+      { "method": "POST", "path": "/api/rag/ask", "auth": true, "body": { "question": "string", "documentIds": "array" } },
+      { "method": "POST", "path": "/api/rag/generate-quiz", "auth": true, "body": { "documentIds": "array", "numQuestions": "number" } }
+    ]
+  }
+}

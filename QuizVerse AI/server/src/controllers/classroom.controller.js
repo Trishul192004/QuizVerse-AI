@@ -1,0 +1,321 @@
+const db = require("../config/db");
+
+const generateJoinCode = require(
+  "../utils/generateJoinCode"
+);
+
+exports.createClassroom = async (
+  req,
+  res
+) => {
+  try {
+    const { name } = req.body;
+
+    if (!name) {
+      return res.status(400).json({
+        success: false,
+        message: "Classroom name is required",
+      });
+    }
+
+    const joinCode = generateJoinCode();
+
+    const [result] = await db.query(
+      `
+      INSERT INTO classrooms
+      (name, join_code, teacher_id)
+      VALUES (?, ?, ?)
+      `,
+      [
+        name,
+        joinCode,
+        req.user.id,
+      ]
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: "Classroom created successfully",
+      classroom: {
+        id: result.insertId,
+        name,
+        joinCode,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+exports.getTeacherClassrooms = async (
+  req,
+  res
+) => {
+  try {
+
+    const [rows] = await db.query(
+      `
+      SELECT
+        id,
+        name,
+        join_code,
+        created_at
+      FROM classrooms
+      WHERE teacher_id = ?
+      ORDER BY created_at DESC
+      `,
+      [req.user.id]
+    );
+
+    return res.status(200).json({
+      success: true,
+      classrooms: rows,
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch classrooms",
+    });
+
+  }
+};
+
+
+exports.deleteClassroom = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const [rows] = await db.query(
+      `
+      SELECT id
+      FROM classrooms
+      WHERE id = ?
+      AND teacher_id = ?
+      `,
+      [id, req.user.id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Classroom not found",
+      });
+    }
+
+    await db.query(
+      `
+      DELETE FROM classrooms
+      WHERE id = ?
+      `,
+      [id]
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Classroom deleted successfully",
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+
+  }
+};
+
+exports.joinClassroom = async (req, res) => {
+  try {
+
+    const { joinCode } = req.body;
+
+    if (!joinCode) {
+      return res.status(400).json({
+        success: false,
+        message: "Join code is required",
+      });
+    }
+
+    // Find classroom
+    const [classrooms] = await db.query(
+      `
+      SELECT id, name
+      FROM classrooms
+      WHERE join_code = ?
+      `,
+      [joinCode]
+    );
+
+    if (classrooms.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Invalid join code",
+      });
+    }
+
+    const classroom = classrooms[0];
+
+    // Check if already joined
+    const [existing] = await db.query(
+      `
+      SELECT id
+      FROM classroom_students
+      WHERE classroom_id = ?
+      AND student_id = ?
+      `,
+      [classroom.id, req.user.id]
+    );
+
+    if (existing.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message: "You have already joined this classroom",
+      });
+    }
+
+    // Join classroom
+    await db.query(
+      `
+      INSERT INTO classroom_students
+      (classroom_id, student_id)
+      VALUES (?, ?)
+      `,
+      [classroom.id, req.user.id]
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Joined classroom successfully",
+      classroom,
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+
+  }
+};
+
+exports.getStudentClassrooms = async (
+  req,
+  res
+) => {
+  try {
+
+    const [rows] = await db.query(
+      `
+      SELECT
+        c.id,
+        c.name,
+        c.join_code,
+        c.created_at
+      FROM classrooms c
+      INNER JOIN classroom_students cs
+        ON c.id = cs.classroom_id
+      WHERE cs.student_id = ?
+      ORDER BY c.created_at DESC
+      `,
+      [req.user.id]
+    );
+
+    return res.status(200).json({
+      success: true,
+      classrooms: rows,
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch classrooms",
+    });
+
+  }
+};
+/*
+=================================
+GET SINGLE CLASSROOM
+GET /api/classrooms/:id
+=================================
+*/
+
+exports.getClassroomById = async (req, res) => {
+  try {
+
+    const { id } = req.params;
+
+    /*
+    =================================
+    VERIFY CLASSROOM BELONGS TO TEACHER
+    =================================
+    */
+
+    const [rows] = await db.query(
+      `
+      SELECT
+        c.id,
+        c.name,
+        c.join_code,
+        c.created_at,
+        COUNT(cs.student_id) AS students
+      FROM classrooms c
+      LEFT JOIN classroom_students cs
+        ON c.id = cs.classroom_id
+      WHERE
+        c.id = ?
+      AND
+        c.teacher_id = ?
+      GROUP BY
+        c.id,
+        c.name,
+        c.join_code,
+        c.created_at
+      `,
+      [
+        id,
+        req.user.id,
+      ]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Classroom not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      classroom: rows[0],
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+
+  }
+};
