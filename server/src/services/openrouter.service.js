@@ -35,7 +35,7 @@ async function generateResponse(messages) {
     headers: {
       Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
       "Content-Type": "application/json",
-      "HTTP-Referer": "http://localhost:5000",
+      "HTTP-Referer": process.env.SITE_URL || process.env.CORS_ORIGIN || "http://localhost:5000",
       "X-Title": "QuizVerse AI",
     },
   }
@@ -78,7 +78,7 @@ async function generateEmbedding(text) {
         headers: {
           Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
           "Content-Type": "application/json",
-          "HTTP-Referer": "http://localhost:5000",
+          "HTTP-Referer": process.env.SITE_URL || process.env.CORS_ORIGIN || "http://localhost:5000",
           "X-Title": "QuizVerse AI",
         },
       }

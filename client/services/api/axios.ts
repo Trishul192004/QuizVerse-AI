@@ -1,7 +1,8 @@
 import axios from "axios";
+import { API_BASE_URL } from "@/lib/config";
 
 const api = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: API_BASE_URL,
   timeout: 120000,
   headers: {
     "Content-Type": "application/json",
@@ -37,8 +38,8 @@ api.interceptors.response.use(
 
       if (refreshToken) {
         try {
-          const res = await axios.post(
-            "http://localhost:5000/api/auth/refresh",
+          const res = await api.post(
+            "/auth/refresh",
             { refreshToken }
           );
 

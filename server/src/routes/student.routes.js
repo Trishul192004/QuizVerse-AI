@@ -154,4 +154,60 @@ router.post(
   studentController.submitAIStudyQuiz
 );
 */
+/*
+=================================
+GET QUIZ BY ID (studentQuiz.service compatibility)
+GET /api/student/quizzes/:quizId
+=================================
+*/
+router.get(
+  "/quizzes/:quizId",
+  verifyToken,
+  authorizeRoles("student"),
+  studentController.getQuizForStudent
+);
+
+/*
+=================================
+START QUIZ (studentQuiz.service compatibility)
+POST /api/student/quizzes/:quizId/start
+=================================
+*/
+router.post(
+  "/quizzes/:quizId/start",
+  verifyToken,
+  authorizeRoles("student"),
+  studentController.startQuiz
+);
+
+/*
+=================================
+GET ATTEMPT RESULT (studentQuiz.service compatibility)
+GET /api/student/attempt/:attemptId/result
+=================================
+*/
+router.get(
+  "/attempt/:attemptId/result",
+  verifyToken,
+  authorizeRoles("student"),
+  studentController.getAttemptQuiz
+);
+
+/*
+=================================
+SUBMIT QUIZ (studentQuiz.service compatibility)
+POST /api/student/quizzes/:quizId/submit
+(body: { attemptId, answers })
+=================================
+*/
+router.post(
+  "/quizzes/:quizId/submit",
+  verifyToken,
+  authorizeRoles("student"),
+  async (req, res) => {
+    req.params.attemptId = req.body.attemptId;
+    return studentController.submitQuiz(req, res);
+  }
+);
+
 module.exports = router;
